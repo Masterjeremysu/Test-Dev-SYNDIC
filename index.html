@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="robots" content="index, follow">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CoproSync">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <meta name="description" content="CoproSync centralise la gestion opérationnelle de copropriété: incidents, échanges, votes, documents et suivi en temps réel.">
+  <meta name="format-detection" content="telephone=no">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:title" content="CoproSync">
+  <meta property="og:description" content="Gestion opérationnelle de copropriété">
+  <meta property="og:image" content="apple-touch-icon.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CoproSync">
+  <meta name="twitter:description" content="Gestion opérationnelle de copropriété">
+  <meta name="twitter:image" content="apple-touch-icon.png">
+  <title>CoproSync</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="canonical" href="./">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
+
+<link rel="stylesheet" href="assets/css/app.css">
+
+</head>
+<body>
+<a class="skip-link" href="#main">Aller au contenu principal</a>
+<noscript>
+  <div style="padding:12px 16px;background:#fff4e5;color:#7a3e00;font-family:Arial,sans-serif;border-bottom:1px solid #f3d09d;">
+    Cette application requiert JavaScript pour fonctionner correctement.
+  </div>
+</noscript>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-split">
+
+    <!-- HERO GAUCHE -->
+    <div class="login-hero">
+      <div class="login-hero-badge">
+        <span>●</span> Résidence le Floréal
+      </div>
+      <div class="login-hero-title">
+        Votre résidence,<br><em>connectée.</em>
+      </div>
+      <div class="login-hero-desc">
+        Signalez, échangez, votez — tout ce dont vous avez besoin pour vivre mieux ensemble au 13-19 rue du Moucherotte, Sassenage.
+      </div>
+      <div class="login-hero-stats">
+        <div class="login-stat">
+          <div class="login-stat-num">240</div>
+          <div class="login-stat-label">Logements</div>
+        </div>
+        <div class="login-stat">
+          <div class="login-stat-num">4</div>
+          <div class="login-stat-label">Tours</div>
+        </div>
+        <div class="login-stat">
+          <div class="login-stat-num">24/7</div>
+          <div class="login-stat-label">Disponible</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULAIRE DROIT -->
+    <div class="login-box">
+      <div class="login-box-header">
+        <div class="login-brand">CoproSync</div>
+        <div class="login-tag">Résidence le Floréal · Sassenage</div>
+      </div>
+      <div id="auth-form">
+        <div class="fg">
+          <label class="label">Email</label>
+          <input type="email" id="auth-email" class="input" placeholder="votre@email.com" autocomplete="off" data-lpignore="true" data-form-type="other">
+        </div>
+        <div class="fg">
+          <label class="label">Mot de passe</label>
+          <input type="password" id="auth-pass" class="input" placeholder="••••••••" autocomplete="new-password" data-lpignore="true" data-form-type="other">
+        </div>
+
+        <!-- Champs supplémentaires visibles uniquement en mode inscription -->
+        <div id="auth-extra-fields" style="display:none;">
+          <div style="display:flex;gap:8px;margin-bottom:0;">
+            <div class="fg" style="flex:1;">
+              <label class="label">Prénom *</label>
+              <input type="text" id="auth-prenom" class="input" placeholder="Jérémy">
+            </div>
+            <div class="fg" style="flex:1;">
+              <label class="label">Nom</label>
+              <input type="text" id="auth-nom" class="input" placeholder="Dupont">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div class="fg" style="flex:1;">
+              <label class="label">Ma tour</label>
+              <select id="auth-tour" class="input" style="appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M6 9l6 6 6-6%22 stroke=%22rgba(255,255,255,.4)%22 stroke-width=%222%22 fill=%22none%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 12px center;color:rgba(255,255,255,.8);">
+                <option value="" style="background:#1c1b19;color:#f0ede8;">Choisir…</option>
+                <option style="background:#1c1b19;color:#f0ede8;">Tour 13</option>
+                <option style="background:#1c1b19;color:#f0ede8;">Tour 15</option>
+                <option style="background:#1c1b19;color:#f0ede8;">Tour 17</option>
+                <option style="background:#1c1b19;color:#f0ede8;">Tour 19</option>
+              </select>
+            </div>
+            <div class="fg" style="flex:1;">
+              <label class="label">N° de lot</label>
+              <input type="text" id="auth-lot" class="input" placeholder="Ex : 148">
+            </div>
+          </div>
+          <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:11.5px;color:rgba(180,200,255,.7);line-height:1.5;">
+            💡 Votre numéro de lot figure sur votre titre de propriété, votre avis de charges ou votre boîte aux lettres.
+          </div>
+        </div>
+
+        <div id="auth-error" style="color:#f87171;font-size:12px;margin-bottom:12px;display:none;background:rgba(248,113,113,.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(248,113,113,.2);"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" id="auth-btn" onclick="doAuth()">
+          <span id="auth-btn-text">Se connecter</span>
+        </button>
+        <div style="text-align:center;margin-top:16px;display:flex;flex-direction:column;gap:6px;">
+          <a href="#" onclick="toggleAuthMode(event)" style="font-size:12px;color:rgba(255,255,255,.3);text-decoration:none;" id="auth-toggle-link">
+            Pas encore de compte ? <span style="color:rgba(59,130,246,.8);text-decoration:underline;">Créer un compte</span>
+          </a>
+          <a href="#" onclick="forgotPassword(event)" style="font-size:12px;color:rgba(255,255,255,.2);text-decoration:underline;">
+        Mot de passe oublié ?
+      </a>
+      <a href="?faq=1" style="font-size:12px;color:rgba(255,255,255,.2);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+        ❓ Aide & FAQ
+      </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div id="so" onclick="closeSidebar()"></div>
+  <nav id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="white" stroke="none"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">CoproSync</div>
+        <div class="brand-sub" id="sb-copro-name">Résidence le Floréal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">Tableau de bord</div>
+    <a class="nav-item active" data-page="dashboard" onclick="nav('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Vue d'ensemble
+    </a>
+
+    <div class="nav-section">Signalements</div>
+    <a class="nav-item" data-page="tickets" onclick="nav('tickets')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Signalements
+      <span class="nav-count" id="nc-tickets" style="display:none">0</span>
+    </a>
+    <a class="nav-item" data-page="map" onclick="nav('map')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      Carte
+    </a>
+    <a class="nav-item" data-page="messages" onclick="nav('messages')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Messages
+      <span class="nav-count" id="nc-messages" style="display:none">0</span>
+    </a>
+
+    <div class="nav-section">Vie de la résidence</div>
+    <a class="nav-item" data-page="annonces" onclick="nav('annonces')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      Annonces
+      <span class="nav-count" id="nc-annonces" style="display:none">0</span>
+    </a>
+    <a class="nav-item" data-page="agenda" onclick="nav('agenda')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Agenda
+    </a>
+    <a class="nav-item" data-page="contacts" onclick="nav('contacts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18a2 2 0 012-2.18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+      Contacts & Urgences
+    </a>
+    <a class="nav-item" data-page="faq" onclick="nav('faq')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9.09 9a3 3 0 015.82 1c0 2-3 2-3 4"/>
+        <circle cx="12" cy="17" r="1"/>
+        <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      FAQ
+    </a>
+    <a class="nav-item" data-page="documents" onclick="nav('documents')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+      Documents
+      <span class="nav-count" id="nc-documents" style="display:none;">0</span>
+    </a>
+    <a class="nav-item" data-page="votes" onclick="nav('votes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Votes & Sondages
+      <span class="nav-count" id="nc-votes" style="display:none;">0</span>
+    </a>
+
+    <div class="nav-section nav-admin-only" id="nav-section-gestion">Gestion</div>
+    <a class="nav-item nav-manager-only" data-page="contrats" onclick="nav('contrats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      Contrats
+      <span class="nav-count" id="nc-contrats" style="display:none;background:var(--amber)">!</span>
+    </a>
+    <a class="nav-item nav-manager-only" data-page="cles" onclick="nav('cles')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      Clés
+    </a>
+    <a class="nav-item nav-manager-only" data-page="journal" onclick="nav('journal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      Journal
+    </a>
+
+    <div class="nav-section nav-admin-only">Administration</div>
+    <a class="nav-item nav-admin-only" data-page="admin" onclick="nav('admin')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 4v5c0 5-3.5 8.5-7 9-3.5-.5-7-4-7-9V7l7-4z"/><path d="M9.5 12l1.7 1.7L14.8 10"/><circle cx="12" cy="12" r="3"/></svg>
+      Admin accès
+    </a>
+    <a class="nav-item nav-admin-only" data-page="users" onclick="nav('users')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Utilisateurs
+    </a>
+    <a class="nav-item nav-manager-only" data-page="rapport" onclick="nav('rapport')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Rapport syndic
+    </a>
+
+    <div class="sidebar-footer">
+      <div class="user-pill" onclick="nav('profile')">
+        <div class="user-av" id="nav-av">?</div>
+        <div>
+          <div class="user-name-small" id="nav-nom">...</div>
+          <div class="user-role-small" id="nav-role">...</div>
+        </div>
+        <button class="btn-logout" onclick="event.stopPropagation();doLogout()">Quitter</button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main" tabindex="-1">
+    <div id="topbar">
+      <button id="menu-btn" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="topbar-title" id="topbar-title">Vue d'ensemble</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="notif-btn" onclick="openSearch()" title="Rechercher (Ctrl+K)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <button class="notif-btn" id="theme-btn" onclick="toggleTheme()" title="Mode sombre">
+          <span id="theme-ico">🌙</span>
+        </button>
+        <div style="position:relative;" id="notif-wrap">
+          <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="notif-dot" id="notif-dot"></span>
+          </button>
+          <div class="notif-panel" id="notif-panel" style="display:none;"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openNewTicket()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Signaler
+        </button>
+      </div>
+    </div>
+    <div id="page"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV MOBILE -->
+<nav id="bottom-nav">
+  <button class="bn-item active" id="bn-dashboard" onclick="nav('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Accueil
+  </button>
+  <button class="bn-item" id="bn-tickets" onclick="nav('tickets')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Signalements
+    <span class="bn-badge" id="bn-badge-tickets" style="display:none"></span>
+  </button>
+  <button class="bn-item bn-signaler" onclick="openNewTicket()">
+    <div class="bn-signaler-ico">
+      <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    Signaler
+  </button>
+  <button class="bn-item" id="bn-map" onclick="nav('map')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+    Carte
+  </button>
+  <button class="bn-item" id="bn-messages" onclick="nav('messages')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Messages
+    <span class="bn-badge" id="bn-badge-messages" style="display:none"></span>
+  </button>
+</nav>
+
+<!-- MODAL TICKET -->
+<div class="overlay" id="m-ticket">
+  <div class="modal">
+    <div class="mh">
+      <span class="mh-title" id="m-ticket-title">Nouveau signalement</span>
+      <button class="mclose" onclick="closeModal('m-ticket')">×</button>
+    </div>
+    <div class="mb">
+
+      <!-- URGENCE -->
+      <div class="fg">
+        <label class="label">Urgence *</label>
+        <div class="urgency-grid" id="urgency-grid">
+          <div class="urgency-opt" id="urg-critique" onclick="setUrgency('critique')">🔴 Critique</div>
+          <div class="urgency-opt" id="urg-important" onclick="setUrgency('important')">🟠 Important</div>
+          <div class="urgency-opt sel-normal" id="urg-normal" onclick="setUrgency('normal')">🔵 Normal</div>
+        </div>
+        <div id="urgence-hint" style="font-size:11px;color:var(--text-3);margin-top:4px;display:none;">Le niveau Critique est réservé aux gestionnaires de la résidence.</div>
+      </div>
+
+      <!-- CATÉGORIE — déclenche les options de zone dynamiques -->
+      <div class="fg">
+        <label class="label">Catégorie *</label>
+        <div id="cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">
+          <div class="cat-opt" data-cat="ascenseur" onclick="selectCat(this)">🛗 Ascenseur</div>
+          <div class="cat-opt" data-cat="fuite" onclick="selectCat(this)">💧 Fuite / eau</div>
+          <div class="cat-opt" data-cat="electricite" onclick="selectCat(this)">⚡ Électricité</div>
+          <div class="cat-opt" data-cat="securite" onclick="selectCat(this)">🔒 Sécurité / accès</div>
+          <div class="cat-opt" data-cat="proprete" onclick="selectCat(this)">🧹 Propreté</div>
+          <div class="cat-opt" data-cat="espaces_verts" onclick="selectCat(this)">🌿 Espaces verts</div>
+          <div class="cat-opt" data-cat="serrurerie" onclick="selectCat(this)">🔑 Serrurerie</div>
+          <div class="cat-opt" data-cat="parking" onclick="selectCat(this)">🚗 Parking</div>
+          <div class="cat-opt" data-cat="autre" onclick="selectCat(this)">📋 Autre</div>
+        </div>
+      </div>
+
+      <!-- LOCALISATION contextuelle -->
+      <div class="fg" id="loc-bloc">
+        <label class="label">Localisation *</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="loc-selects">
+          <div>
+            <label style="font-size:11px;color:var(--text-3);display:block;margin-bottom:4px;">Zone</label>
+            <select id="t-bat" class="select" onchange="updateZoneOptions()">
+              <option value="">Choisir...</option>
+              <optgroup label="Tours">
+                <option value="Tour 13">Tour 13 — n°13 rue du Moucherotte</option>
+                <option value="Tour 15">Tour 15 — n°15 rue du Moucherotte</option>
+                <option value="Tour 17">Tour 17 — n°17 rue du Moucherotte</option>
+                <option value="Tour 19">Tour 19 — n°19 rue du Moucherotte</option>
+              </optgroup>
+              <optgroup label="Parties communes extérieures">
+                <option value="Parking visiteurs">Parking visiteurs (120 places)</option>
+                <option value="Parking privé">Parking privé (120 places)</option>
+                <option value="Garages">Garages</option>
+                <option value="Aire de jeux">Aire de jeux enfants</option>
+                <option value="Portails / portillons">Portails / portillons</option>
+                <option value="Extérieur général">Extérieur / voirie interne</option>
+              </optgroup>
+            </select>
+          </div>
+          <div id="zone-detail-wrap">
+            <label style="font-size:11px;color:var(--text-3);display:block;margin-bottom:4px;">Précision</label>
+            <select id="t-zone-select" class="select">
+              <option value="">Sélectionner zone d'abord</option>
+            </select>
+          </div>
+        </div>
+        <input type="text" id="t-zone-free" class="input" placeholder="Précision libre (optionnel)" style="margin-top:8px;">
+      </div>
+
+      <!-- TITRE -->
+      <div class="fg">
+        <label class="label">Titre *</label>
+        <input type="text" id="t-titre" class="input" placeholder="Résumez le problème en quelques mots...">
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="fg">
+        <label class="label">Description</label>
+        <textarea id="t-desc" class="textarea" placeholder="Depuis quand ? Risques ? Observations utiles pour l'intervention..."></textarea>
+      </div>
+
+      <!-- PHOTO -->
+      <div class="fg">
+        <label class="label">Photos <span style="color:var(--text-3);font-weight:400;">(optionnel · max 5)</span></label>
+        <div class="photo-zone">
+          <div class="photo-btns">
+            <button type="button" class="photo-btn" onclick="document.getElementById('photo-cam').click()">
+              📷 Prendre une photo
+            </button>
+            <button type="button" class="photo-btn" onclick="document.getElementById('photo-gal').click()">
+              🖼️ Galerie
+            </button>
+          </div>
+          <div class="photo-grid" id="photo-grid"></div>
+          <div class="photo-count" id="photo-count" style="display:none;"></div>
+        </div>
+        <input type="file" id="photo-cam" accept="image/*" capture="environment" style="display:none" multiple onchange="handlePhotos(event)">
+        <input type="file" id="photo-gal" accept="image/*" style="display:none" multiple onchange="handlePhotos(event)">
+      </div>
+
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="closeModal('m-ticket')">Annuler</button>
+      <button class="btn btn-primary" id="submit-ticket-btn" onclick="submitTicket()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+        Créer le signalement
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL TICKET -->
+<div class="overlay" id="m-detail">
+  <div class="modal modal-wide">
+    <div class="mh">
+      <span class="mh-title" id="m-detail-title">Détail</span>
+      <button class="mclose" onclick="closeModal('m-detail')">×</button>
+    </div>
+    <div class="mb" id="m-detail-body"></div>
+    <div class="mf" id="m-detail-footer"></div>
+  </div>
+</div>
+
+<!-- MODAL CONTRAT -->
+<div class="overlay" id="m-contrat">
+  <div class="modal">
+    <div class="mh"><span class="mh-title">Ajouter un contrat</span><button class="mclose" onclick="closeModal('m-contrat')">×</button></div>
+    <div class="mb">
+      <div class="fg-row">
+        <div class="fg" style="margin:0;">
+          <label class="label">Fournisseur *</label>
+          <input type="text" id="c-four" class="input" placeholder="Nom de l'entreprise">
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="label">Type *</label>
+          <select id="c-type" class="select">
+            <option>Ascenseurs (ACAF)</option>
+            <option>Chauffage / ECS</option>
+            <option>Nettoyage parties communes</option>
+            <option>Gardiennage / surveillance</option>
+            <option>Espaces verts</option>
+            <option>Assurance immeuble</option>
+            <option>Électricité parties communes</option>
+            <option>Eau / plomberie</option>
+            <option>Portails / portillons électriques</option>
+            <option>Interphonie / vidéophonie</option>
+            <option>Contrôle accès</option>
+            <option>Aire de jeux (contrôle réglementaire)</option>
+            <option>Extincteurs / sécurité incendie</option>
+            <option>Gestion déchets</option>
+            <option>Autre</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg-row" style="margin-top:14px;">
+        <div class="fg" style="margin:0;"><label class="label">Date début</label><input type="date" id="c-deb" class="input"></div>
+        <div class="fg" style="margin:0;"><label class="label">Échéance *</label><input type="date" id="c-ech" class="input"></div>
+      </div>
+      <div class="fg-row" style="margin-top:14px;">
+        <div class="fg" style="margin:0;"><label class="label">Contact</label><input type="text" id="c-cont" class="input" placeholder="Nom, tél, email..."></div>
+        <div class="fg" style="margin:0;"><label class="label">Montant annuel (€)</label><input type="number" id="c-mont" class="input" placeholder="0"></div>
+      </div>
+      <div class="fg" style="margin-top:14px;"><label class="label">Notes</label><textarea id="c-notes" class="textarea" placeholder="Conditions, numéro contrat..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="closeModal('m-contrat')">Annuler</button>
+      <button class="btn btn-primary" onclick="submitContrat()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CLÉ -->
+<div class="overlay" id="m-cle">
+  <div class="modal">
+    <div class="mh"><span class="mh-title">Gérer une clé</span><button class="mclose" onclick="closeModal('m-cle')">×</button></div>
+    <div class="mb">
+      <div class="fg"><label class="label">Nom de la clé *</label><input type="text" id="k-nom" class="input" placeholder="Ex: Local technique sous-sol"></div>
+      <div class="fg"><label class="label">Détenteur actuel</label><input type="text" id="k-det" class="input" placeholder="Nom complet"></div>
+      <div class="fg"><label class="label">Date de sortie</label><input type="date" id="k-date" class="input"></div>
+      <div class="fg"><label class="label">Notes</label><textarea id="k-notes" class="textarea" placeholder="Accès autorisés, copies..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="closeModal('m-cle')">Annuler</button>
+      <button class="btn btn-primary" onclick="submitCle()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INVITE USER -->
+<div class="overlay" id="m-invite">
+  <div class="modal">
+    <div class="mh"><span class="mh-title">Inviter un utilisateur</span><button class="mclose" onclick="closeModal('m-invite')">×</button></div>
+    <div class="mb">
+      <div class="fg"><label class="label">Email *</label><input type="email" id="inv-email" class="input" placeholder="prenom.nom@email.com"></div>
+      <div class="fg-row">
+        <div class="fg" style="margin:0;"><label class="label">Prénom</label><input type="text" id="inv-prenom" class="input"></div>
+        <div class="fg" style="margin:0;"><label class="label">Nom</label><input type="text" id="inv-nom" class="input"></div>
+      </div>
+      <div class="fg-row" style="margin-top:14px;">
+        <div class="fg" style="margin:0;">
+          <label class="label">Rôle *</label>
+          <select id="inv-role" class="select">
+            <option value="copropriétaire">Copropriétaire</option>
+            <option value="membre_cs">Membre Conseil Syndical</option>
+            <option value="syndic">Syndic</option>
+            <option value="administrateur">Administrateur</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0;"><label class="label">Lot / appartement</label><input type="text" id="inv-lot" class="input" placeholder="Ex: A-204"></div>
+      </div>
+      <div style="background:var(--blue-light);border:1px solid var(--blue-border);border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--accent);margin-top:8px;">
+        📧 Un email d'invitation sera envoyé avec le lien de création de mot de passe.
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="closeModal('m-invite')">Annuler</button>
+      <button class="btn btn-primary" id="inv-btn" onclick="submitInvite()">Envoyer l'invitation</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+  <script src="assets/js/core/config.js" defer></script>
+  <script src="assets/js/core/state.js" defer></script>
+  <script src="assets/js/core/helpers.js" defer></script>
+  <script src="assets/js/features/auth/auth.js" defer></script>
+  <script src="assets/js/core/app-start.js" defer></script>
+  <script src="assets/js/services/data-loaders.js" defer></script>
+  <script src="assets/js/services/realtime-notifications.js" defer></script>
+  <script src="assets/js/services/logging.js" defer></script>
+  <script src="assets/js/services/email.js" defer></script>
+  <script src="assets/js/features/navigation/navigation.js" defer></script>
+  <script src="assets/js/features/ui/modal.js" defer></script>
+  <script src="assets/js/features/ui/render-router.js" defer></script>
+  <script src="assets/js/features/dashboard/dashboard.js" defer></script>
+  <script src="assets/js/features/tickets/ticket-detail.js" defer></script>
+  <script src="assets/js/features/tickets/ticket-form.js" defer></script>
+  <script src="assets/js/features/tickets/ticket-map.js" defer></script>
+  <script src="assets/js/features/assets/contrats.js" defer></script>
+  <script src="assets/js/features/assets/cles.js" defer></script>
+  <script src="assets/js/features/assets/journal.js" defer></script>
+  <script src="assets/js/features/users/users.js" defer></script>
+  <script src="assets/js/features/admin/admin.js" defer></script>
+  <script src="assets/js/features/notifications/notifications-page.js" defer></script>
+  <script src="assets/js/features/profile/profile.js" defer></script>
+  <script src="assets/js/features/register/qr-and-register-link.js" defer></script>
+  <script src="assets/js/features/register/register-page.js" defer></script>
+  <script src="assets/js/features/reports/rapport.js" defer></script>
+  <script src="assets/js/features/mobile/mobile-interactions.js" defer></script>
+  <script src="assets/js/services/pwa.js" defer></script>
+  <script src="assets/js/features/annonces/annonces.js" defer></script>
+  <script src="assets/js/features/agenda/agenda.js" defer></script>
+  <script src="assets/js/features/theme/theme.js" defer></script>
+  <script src="assets/js/features/search/search.js" defer></script>
+  <script src="assets/js/features/contacts/contacts.js" defer></script>
+  <script src="assets/js/features/faq/faq.js" defer></script>
+  <script src="assets/js/features/onboarding/onboarding.js" defer></script>
+  <script src="assets/js/features/documents/documents.js" defer></script>
+  <script src="assets/js/features/votes/votes.js" defer></script>
+  <script src="assets/js/features/messages/messages.js" defer></script>
+  <script src="assets/js/core/bootstrap-session.js" defer></script>
+</body>
+</html>
