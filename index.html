@@ -448,11 +448,16 @@
   </div>
 </div>
 
-<!-- MODAL CONTRAT -->
+<!-- MODAL CONTRAT — REMPLACER l'ancien bloc dans index.html -->
 <div class="overlay" id="m-contrat">
-  <div class="modal">
-    <div class="mh"><span class="mh-title">Ajouter un contrat</span><button class="mclose" onclick="closeModal('m-contrat')">×</button></div>
+  <div class="modal" style="max-width:580px;">
+    <div class="mh">
+      <span class="mh-title" id="m-contrat-title">Ajouter un contrat</span>
+      <button class="mclose" onclick="closeModal('m-contrat'); window._editingContratId=null;">×</button>
+    </div>
     <div class="mb">
+
+      <!-- Ligne 1 : Fournisseur + Type -->
       <div class="fg-row">
         <div class="fg" style="margin:0;">
           <label class="label">Fournisseur *</label>
@@ -479,19 +484,70 @@
           </select>
         </div>
       </div>
+
+      <!-- Ligne 2 : Dates -->
       <div class="fg-row" style="margin-top:14px;">
-        <div class="fg" style="margin:0;"><label class="label">Date début</label><input type="date" id="c-deb" class="input"></div>
-        <div class="fg" style="margin:0;"><label class="label">Échéance *</label><input type="date" id="c-ech" class="input"></div>
+        <div class="fg" style="margin:0;">
+          <label class="label">Date de début</label>
+          <input type="date" id="c-deb" class="input">
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="label">Échéance *</label>
+          <input type="date" id="c-ech" class="input">
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="label">Alerte avant (jours)</label>
+          <input type="number" id="c-alerte" class="input" value="90" min="0" placeholder="90">
+        </div>
       </div>
-      <div class="fg-row" style="margin-top:14px;">
-        <div class="fg" style="margin:0;"><label class="label">Contact</label><input type="text" id="c-cont" class="input" placeholder="Nom, tél, email..."></div>
-        <div class="fg" style="margin:0;"><label class="label">Montant annuel (€)</label><input type="number" id="c-mont" class="input" placeholder="0"></div>
+
+      <!-- Ligne 3 : Montant + Actif -->
+      <div class="fg-row" style="margin-top:14px;align-items:flex-end;">
+        <div class="fg" style="margin:0;">
+          <label class="label">Montant annuel (€)</label>
+          <input type="number" id="c-mont" class="input" placeholder="0">
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="label">URL document PDF</label>
+          <input type="url" id="c-doc-url" class="input" placeholder="https://…">
+        </div>
+        <div class="fg" style="margin:0;display:flex;align-items:center;gap:8px;padding-bottom:2px;">
+          <input type="checkbox" id="c-actif" checked style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary,#6366f1);">
+          <label for="c-actif" class="label" style="margin:0;cursor:pointer;">Contrat actif</label>
+        </div>
       </div>
-      <div class="fg" style="margin-top:14px;"><label class="label">Notes</label><textarea id="c-notes" class="textarea" placeholder="Conditions, numéro contrat..."></textarea></div>
+
+      <!-- Bloc Contact -->
+      <fieldset style="border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:14px;margin-top:16px;">
+        <legend style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3,#94a3b8);padding:0 6px;">
+          Contact fournisseur
+        </legend>
+        <div class="fg-row">
+          <div class="fg" style="margin:0;">
+            <label class="label">Nom</label>
+            <input type="text" id="c-cont-nom" class="input" placeholder="Jean Dupont">
+          </div>
+          <div class="fg" style="margin:0;">
+            <label class="label">Téléphone</label>
+            <input type="tel" id="c-cont-tel" class="input" placeholder="06 …">
+          </div>
+          <div class="fg" style="margin:0;">
+            <label class="label">Email</label>
+            <input type="email" id="c-cont-email" class="input" placeholder="contact@…">
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Notes -->
+      <div class="fg" style="margin-top:14px;">
+        <label class="label">Notes</label>
+        <textarea id="c-notes" class="textarea" rows="3" placeholder="Conditions, numéro de contrat, prestations incluses…"></textarea>
+      </div>
+
     </div>
     <div class="mf">
-      <button class="btn btn-secondary" onclick="closeModal('m-contrat')">Annuler</button>
-      <button class="btn btn-primary" onclick="submitContrat()">Enregistrer</button>
+      <button class="btn btn-secondary" onclick="closeModal('m-contrat'); window._editingContratId=null;">Annuler</button>
+      <button class="btn btn-primary" onclick="submitOrUpdateContrat()">Enregistrer</button>
     </div>
   </div>
 </div>
