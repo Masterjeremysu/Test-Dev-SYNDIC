@@ -58,5 +58,10 @@ async function submitContrat() {
   updateBadges();
   renderContrats();
 }
-
+window.clearDocUrl = function() {
+  const input = document.getElementById('c-doc-url');
+  if (input) input.value = '';
+  const preview = document.getElementById('doc-url-preview');
+  if (preview) preview.style.display = 'none';
+};
 // ── CLÉS ──
