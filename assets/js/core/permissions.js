@@ -107,17 +107,24 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   function getAccessiblePages() {
-    if (window.profile?.role === 'administrateur') {
-      return [...Object.values(MODULE_TO_PAGES).flat(), 'profile', 'notifications'];
-    }
-    if (_locked) return ['profile', 'notifications'];
-
-    const pages = new Set(['profile', 'notifications']);
-    Object.entries(MODULE_TO_PAGES).forEach(([mod, modPages]) => {
-      if (has(mod + '.view')) modPages.forEach(p => pages.add(p));
-    });
-    return [...pages];
+  // Admin : toutes les pages sans exception
+  if (window.profile?.role === 'administrateur') {
+    return [
+      'dashboard','tickets','map','messages',
+      'annonces','agenda','contacts','faq','documents','votes',
+      'rapport','contrats','cles','journal','users','permissions',
+      'profile','notifications'
+    ];
   }
+
+  if (_locked) return ['profile', 'notifications'];
+
+  const pages = new Set(['profile', 'notifications']);
+  Object.entries(MODULE_TO_PAGES).forEach(([mod, modPages]) => {
+    if (has(mod + '.view')) modPages.forEach(p => pages.add(p));
+  });
+  return [...pages];
+}
 
   function getDefaultPage() {
     if (has('dashboard.view')) return 'dashboard';
