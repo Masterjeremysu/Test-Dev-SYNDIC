@@ -448,7 +448,9 @@
   </div>
 </div>
 
-<!-- MODAL CONTRAT — REMPLACER l'ancien bloc dans index.html -->
+<!-- MODAL CONTRAT — avec sélecteur de document bucket -->
+<!-- Remplace l'ancien bloc <div class="overlay" id="m-contrat"> dans index.html -->
+
 <div class="overlay" id="m-contrat">
   <div class="modal" style="max-width:580px;">
     <div class="mh">
@@ -457,7 +459,7 @@
     </div>
     <div class="mb">
 
-      <!-- Ligne 1 : Fournisseur + Type -->
+      <!-- Fournisseur + Type -->
       <div class="fg-row">
         <div class="fg" style="margin:0;">
           <label class="label">Fournisseur *</label>
@@ -485,7 +487,7 @@
         </div>
       </div>
 
-      <!-- Ligne 2 : Dates -->
+      <!-- Dates + Alerte -->
       <div class="fg-row" style="margin-top:14px;">
         <div class="fg" style="margin:0;">
           <label class="label">Date de début</label>
@@ -497,31 +499,27 @@
         </div>
         <div class="fg" style="margin:0;">
           <label class="label">Alerte avant (jours)</label>
-          <input type="number" id="c-alerte" class="input" value="90" min="0" placeholder="90">
+          <input type="number" id="c-alerte" class="input" value="90" min="0">
         </div>
       </div>
 
-      <!-- Ligne 3 : Montant + Actif -->
+      <!-- Montant + Actif -->
       <div class="fg-row" style="margin-top:14px;align-items:flex-end;">
         <div class="fg" style="margin:0;">
           <label class="label">Montant annuel (€)</label>
           <input type="number" id="c-mont" class="input" placeholder="0">
         </div>
-        <div class="fg" style="margin:0;">
-          <label class="label">URL document PDF</label>
-          <input type="url" id="c-doc-url" class="input" placeholder="https://…">
-        </div>
-        <div class="fg" style="margin:0;display:flex;align-items:center;gap:8px;padding-bottom:2px;">
-          <input type="checkbox" id="c-actif" checked style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary,#6366f1);">
+        <div class="fg" style="margin:0;display:flex;align-items:center;gap:8px;padding-bottom:4px;">
+          <input type="checkbox" id="c-actif" checked
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary,#6366f1);">
           <label for="c-actif" class="label" style="margin:0;cursor:pointer;">Contrat actif</label>
         </div>
       </div>
 
-      <!-- Bloc Contact -->
+      <!-- Contact -->
       <fieldset style="border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:14px;margin-top:16px;">
-        <legend style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3,#94a3b8);padding:0 6px;">
-          Contact fournisseur
-        </legend>
+        <legend style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+                       color:var(--text-3,#94a3b8);padding:0 6px;">Contact fournisseur</legend>
         <div class="fg-row">
           <div class="fg" style="margin:0;">
             <label class="label">Nom</label>
@@ -538,10 +536,30 @@
         </div>
       </fieldset>
 
+      <!-- Document PDF — sélecteur bucket -->
+      <div class="fg" style="margin-top:16px;">
+        <label class="label">Document lié <span style="color:var(--text-3);font-weight:400;">(optionnel)</span></label>
+        <div class="doc-url-wrap">
+          <input type="url" id="c-doc-url" class="input" placeholder="Sélectionnez un fichier depuis vos documents…" readonly>
+          <button type="button" id="btn-browse-docs" class="btn btn-secondary btn-sm" onclick="openDocPicker()">
+            📁 Parcourir
+          </button>
+        </div>
+        <!-- Preview du fichier sélectionné -->
+        <div id="doc-url-preview" style="display:none;margin-top:6px;align-items:center;gap:8px;font-size:12px;color:var(--text-2);">
+          <span>📄</span>
+          <a id="doc-url-preview-link" href="#" target="_blank" rel="noopener"></a>
+          <button type="button" onclick="clearDocUrl()"
+            style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;padding:0;line-height:1;"
+            title="Retirer le document">×</button>
+        </div>
+      </div>
+
       <!-- Notes -->
       <div class="fg" style="margin-top:14px;">
         <label class="label">Notes</label>
-        <textarea id="c-notes" class="textarea" rows="3" placeholder="Conditions, numéro de contrat, prestations incluses…"></textarea>
+        <textarea id="c-notes" class="textarea" rows="3"
+          placeholder="Conditions, numéro de contrat, prestations incluses…"></textarea>
       </div>
 
     </div>
