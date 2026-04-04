@@ -136,22 +136,28 @@ function initUI() {
   // Avatar
   const init = (profile.nom || '').charAt(0).toUpperCase() + (profile.prenom || '').charAt(0).toUpperCase();
   const avEl = $('nav-av');
-  avEl.textContent = init || '?';
-  const roleCls = { administrateur: 'role-admin', syndic: 'role-syndic', membre_cs: 'role-cs' };
-  avEl.className = 'user-av ' + (roleCls[profile.role] || '');
-  $('nav-nom').textContent = displayNameFromProfile(profile, user?.email);
+  if (avEl) {
+    avEl.textContent = init || '?';
+    const roleCls = { administrateur: 'role-admin', syndic: 'role-syndic', membre_cs: 'role-cs' };
+    avEl.className = 'user-av ' + (roleCls[profile.role] || '');
+  }
+  if ($('nav-nom')) $('nav-nom').textContent = displayNameFromProfile(profile, user?.email);
   const roleLabels = { administrateur: 'Administrateur', syndic: 'Syndic', membre_cs: 'Conseil Syndical', 'copropriétaire': 'Copropriétaire' };
-  $('nav-role').textContent = roleLabels[profile.role] || profile.role;
+  if ($('nav-role')) $('nav-role').textContent = roleLabels[profile.role] || profile.role;
 
-  // ── Visibilité du menu selon les permissions ──
+  // Admin : tout afficher sans condition
+  if (profile.role === 'administrateur') {
+    document.querySelectorAll('.nav-item').forEach(el => el.style.display = '');
+    document.querySelectorAll('.nav-section').forEach(el => el.style.display = '');
+    return;
+  }
+
+  // Autres rôles : filtre par permissions
   const accessible = Permissions.getAccessiblePages();
-
-  // Montre/cache chaque item de navigation
   document.querySelectorAll('.nav-item[data-page]').forEach(el => {
     el.style.display = accessible.includes(el.getAttribute('data-page')) ? '' : 'none';
   });
 
-  // Cache les sections vides
   document.querySelectorAll('.nav-section').forEach(section => {
     let next = section.nextElementSibling;
     let hasVisible = false;
@@ -162,7 +168,6 @@ function initUI() {
     section.style.display = hasVisible ? '' : 'none';
   });
 
-  // Bouton Signaler : masqué pour le syndic
   if (isSyndic()) {
     const topbarBtn = document.querySelector('#topbar .btn-primary');
     if (topbarBtn) topbarBtn.style.display = 'none';
