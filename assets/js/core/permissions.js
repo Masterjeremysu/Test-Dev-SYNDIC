@@ -39,18 +39,13 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   async function load() {
-    const role = profile?.role;
-    if (!role) return;
-
-    // Administrateur : toujours tout autorisé (hardcodé)
-    if (role === 'administrateur') {
-  _locked = false;
-  _loaded = true;
-  // Admin : on pré-remplit le cache avec tout à true
-  // pour que has() fonctionne même si appelé avant getAccessiblePages
-  _cache = {};
-  return;
-}
+  const role = profile?.role;   // pas window.profile
+  if (!role) return;
+  if (role === 'administrateur') {
+    _locked = false;
+    _loaded = true;
+    return;
+  }
 
     try {
       // 1. Vérification verrou de rôle
