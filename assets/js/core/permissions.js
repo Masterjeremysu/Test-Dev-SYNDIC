@@ -44,10 +44,13 @@ window.Permissions = (function () {
 
     // Administrateur : toujours tout autorisé (hardcodé)
     if (role === 'administrateur') {
-      _locked = false;
-      _loaded = true;
-      return;
-    }
+  _locked = false;
+  _loaded = true;
+  // Admin : on pré-remplit le cache avec tout à true
+  // pour que has() fonctionne même si appelé avant getAccessiblePages
+  _cache = {};
+  return;
+}
 
     try {
       // 1. Vérification verrou de rôle
