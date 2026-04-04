@@ -5,21 +5,13 @@ let _dashFocusZone = null; // utilisé si mode === 'zone'
 async function renderDashboard() {
   const el = $('page');
 
-  // Skeleton immédiat — évite le layout shift
-  if (!cache.tickets.length) {
-    el.innerHTML = `<div style="padding:16px;">
-      <div class="skeleton sk-line w-60" style="height:28px;margin-bottom:6px;"></div>
-      <div class="skeleton sk-line w-40" style="height:14px;margin-bottom:20px;"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-        <div class="skeleton sk-box"></div><div class="skeleton sk-box"></div>
-        <div class="skeleton sk-box"></div><div class="skeleton sk-box"></div>
-      </div>
-      <div class="skeleton" style="height:200px;border-radius:var(--r-lg);margin-bottom:14px;"></div>
-      <div class="skeleton" style="height:160px;border-radius:var(--r-lg);"></div>
-    </div>`;
+  // Skeleton seulement si chargement en cours (pas si simplement 0 tickets)
+  if (!cache.tickets && !isCopro()) {
+    el.innerHTML = `<div style="padding:16px;">...skeleton...</div>`;
     return;
   }
 
+  // Pour le copropriétaire sans tickets : on continue le render normalement
   const t = cache.tickets;
   const ouverts = t.filter(x => x.statut !== 'résolu' && x.statut !== 'clos');
   const critiques = t.filter(x => x.urgence === 'critique' && x.statut !== 'résolu' && x.statut !== 'clos');
