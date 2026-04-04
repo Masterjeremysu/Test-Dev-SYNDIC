@@ -39,7 +39,7 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   async function load() {
-    const role = window.profile?.role;
+    const role = profile?.role;
     if (!role) return;
 
     // Administrateur : toujours tout autorisé (hardcodé)
@@ -54,7 +54,7 @@ window.Permissions = (function () {
 
     try {
       // 1. Vérification verrou de rôle
-      const { data: lockData } = await window.sb
+      const { data: lockData } = await sb
         .from('role_locks')
         .select('locked')
         .eq('role', role)
@@ -69,7 +69,7 @@ window.Permissions = (function () {
       }
 
       // 2. Chargement des permissions du rôle
-      const { data: rpData } = await window.sb
+      const { data: rpData } = await sb
         .from('role_permissions')
         .select('permission, granted')
         .eq('role', role);
@@ -86,7 +86,7 @@ window.Permissions = (function () {
   }
 
   async function loadCatalog() {
-    const { data } = await window.sb
+    const { data } = await sb
       .from('permissions')
       .select('*')
       .order('module')
@@ -100,7 +100,7 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   function has(permId) {
-    if (window.profile?.role === 'administrateur') return true;
+    if (profile?.role === 'administrateur') return true;
     if (_locked) return false;
     return _cache[permId] === true;
   }
@@ -110,8 +110,7 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   function getAccessiblePages() {
-  // Admin : toutes les pages sans exception
-  if (window.profile?.role === 'administrateur') {
+  if (profile?.role === 'administrateur') {
     return [
       'dashboard','tickets','map','messages',
       'annonces','agenda','contacts','faq','documents','votes',
@@ -119,9 +118,7 @@ window.Permissions = (function () {
       'profile','notifications'
     ];
   }
-
   if (_locked) return ['profile', 'notifications'];
-
   const pages = new Set(['profile', 'notifications']);
   Object.entries(MODULE_TO_PAGES).forEach(([mod, modPages]) => {
     if (has(mod + '.view')) modPages.forEach(p => pages.add(p));
@@ -130,7 +127,7 @@ window.Permissions = (function () {
 }
 
   function getDefaultPage() {
-  if (window.profile?.role === 'administrateur') return 'dashboard';
+  if (profile?.role === 'administrateur') return 'dashboard';
   if (has('dashboard.view')) return 'dashboard';
   if (has('tickets.view'))   return 'tickets';
   if (has('rapport.view'))   return 'rapport';
@@ -142,10 +139,10 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   function startRealtime() {
-    const role = window.profile?.role;
+    const role = profile?.role;
     if (!role || role === 'administrateur' || _rtChan) return;
 
-    _rtChan = window.sb.channel('perm-watch-' + role)
+    _rtChan = sb.channel('perm-watch-' + role)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'role_permissions',
         filter: 'role=eq.' + role
@@ -182,7 +179,7 @@ window.Permissions = (function () {
   }
 
   function stopRealtime() {
-    if (_rtChan) { window.sb.removeChannel(_rtChan); _rtChan = null; }
+    if (_rtChan) { sb.removeChannel(_rtChan); _rtChan = null; }
   }
 
   // ────────────────────────────────────────────────────────────
@@ -190,51 +187,51 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   async function setPermission(role, permId, granted) {
-    if (window.profile?.role !== 'administrateur') return false;
-    const { error } = await window.sb.from('role_permissions').upsert(
-      { role, permission: permId, granted, updated_by: window.user.id, updated_at: new Date().toISOString() },
+    if (profile?.role !== 'administrateur') return false;
+    const { error } = await sb.from('role_permissions').upsert(
+      { role, permission: permId, granted, updated_by: user.id, updated_at: new Date().toISOString() },
       { onConflict: 'role,permission' }
     );
     if (error) { if (typeof window.toast === 'function') window.toast('Erreur : ' + error.message, 'err'); return false; }
-    await window.sb.from('permission_changes_log').insert({
-      admin_id: window.user.id,
-      admin_nom: typeof window.displayNameFromProfile === 'function' ? window.displayNameFromProfile(window.profile, window.user?.email) : 'Admin',
+    await sb.from('permission_changes_log').insert({
+      admin_id: user.id,
+      admin_nom: typeof window.displayNameFromProfile === 'function' ? window.displayNameFromProfile(profile, user?.email) : 'Admin',
       role, permission: permId, action: granted ? 'granted' : 'revoked'
     });
     return true;
   }
 
   async function setRoleLock(role, locked, reason) {
-    if (window.profile?.role !== 'administrateur') return false;
-    const { error } = await window.sb.from('role_locks').upsert(
-      { role, locked, locked_by: locked ? window.user.id : null, locked_at: locked ? new Date().toISOString() : null, reason: locked ? (reason || null) : null },
+    if (profile?.role !== 'administrateur') return false;
+    const { error } = await sb.from('role_locks').upsert(
+      { role, locked, locked_by: locked ? user.id : null, locked_at: locked ? new Date().toISOString() : null, reason: locked ? (reason || null) : null },
       { onConflict: 'role' }
     );
     if (error) return false;
-    await window.sb.from('permission_changes_log').insert({
-      admin_id: window.user.id,
-      admin_nom: typeof window.displayNameFromProfile === 'function' ? window.displayNameFromProfile(window.profile, window.user?.email) : 'Admin',
+    await sb.from('permission_changes_log').insert({
+      admin_id: user.id,
+      admin_nom: typeof window.displayNameFromProfile === 'function' ? window.displayNameFromProfile(profile, user?.email) : 'Admin',
       role, permission: '*', action: locked ? 'role_locked' : 'role_unlocked'
     });
     return true;
   }
 
   async function getPermissionsForRole(role) {
-    const { data } = await window.sb.from('role_permissions').select('permission, granted').eq('role', role);
+    const { data } = await sb.from('role_permissions').select('permission, granted').eq('role', role);
     const map = {};
     (data || []).forEach(rp => { map[rp.permission] = rp.granted === true; });
     return map;
   }
 
   async function getRoleLocks() {
-    const { data } = await window.sb.from('role_locks').select('*');
+    const { data } = await sb.from('role_locks').select('*');
     const map = {};
     (data || []).forEach(rl => { map[rl.role] = rl; });
     return map;
   }
 
   async function getChangeLog(limit) {
-    const { data } = await window.sb.from('permission_changes_log')
+    const { data } = await sb.from('permission_changes_log')
       .select('*').order('created_at', { ascending: false }).limit(limit || 100);
     return data || [];
   }
