@@ -127,11 +127,12 @@ window.Permissions = (function () {
 }
 
   function getDefaultPage() {
-    if (has('dashboard.view')) return 'dashboard';
-    if (has('tickets.view'))   return 'tickets';
-    if (has('rapport.view'))   return 'rapport';
-    return 'profile';
-  }
+  if (window.profile?.role === 'administrateur') return 'dashboard';
+  if (has('dashboard.view')) return 'dashboard';
+  if (has('tickets.view'))   return 'tickets';
+  if (has('rapport.view'))   return 'rapport';
+  return 'profile';
+}
 
   // ────────────────────────────────────────────────────────────
   //  REALTIME
