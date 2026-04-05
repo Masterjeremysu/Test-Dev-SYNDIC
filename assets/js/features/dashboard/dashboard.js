@@ -400,7 +400,7 @@ function renderDashRecentListHTML(list) {
     ouvert: emptyState('✅', 'Tout va bien !', 'Aucun signalement en cours dans la résidence.', '<button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ Signaler un problème</button>'),
     critique: emptyState('🔍', 'Pas de critique pour le moment', 'Rien de critique à traiter dans la résidence.', '<button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ Signaler un problème</button>'),
     resolu: emptyState('🎉', 'Rien à afficher', 'Pas de résolutions récentes dans cette vue.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir tout →</button>`),
-    mine: emptyState('👤', 'Aucun ticket actif', 'Vous n'avez pas de signalement ouvert en ce moment.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir mes tickets →</button>`),
+    mine: emptyState('👤', 'Aucun ticket actif', 'Vous n&apos;avez pas de signalement ouvert en ce moment.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir mes tickets →</button>`),
     transmis: emptyState('📤', 'Rien en attente', 'Aucun ticket transmis à gérer actuellement.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir →</button>`),
     zone: emptyState('🧭', 'Aucune anomalie ici', 'Aucun signalement ouvert dans cette zone.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir →</button>`)
   };
