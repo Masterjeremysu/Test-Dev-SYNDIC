@@ -2,6 +2,104 @@
 let _dashFocusMode = 'tout'; // tout | ouvert | critique | resolu | mine | transmis | zone
 let _dashFocusZone = null; // utilisé si mode === 'zone'
 
+/* ─── CSS widget contrats (injecté une fois) ──────────────────── */
+(function injectDashContratCSS() {
+  if (document.getElementById('dash-contrat-css')) return;
+  const s = document.createElement('style');
+  s.id = 'dash-contrat-css';
+  s.textContent = `
+    .dcc-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:12px 16px; border-bottom:1px solid var(--border,#e2e8f0); }
+    .dcc-kpi { text-align:center; padding:8px 4px; border-radius:8px; background:var(--surface-2,#f8fafc); }
+    .dcc-kpi-val { font-size:18px; font-weight:800; line-height:1; font-family:var(--font-head,inherit); }
+    .dcc-kpi-label { font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3,#94a3b8); font-weight:600; margin-top:3px; }
+    .dcc-kpi.dcc-danger  { background:rgba(239,68,68,.07); }
+    .dcc-kpi.dcc-danger  .dcc-kpi-val { color:var(--red,#ef4444); }
+    .dcc-kpi.dcc-warning { background:rgba(245,158,11,.07); }
+    .dcc-kpi.dcc-warning .dcc-kpi-val { color:var(--amber,#f59e0b); }
+    .dcc-kpi.dcc-ok      { background:rgba(34,197,94,.07); }
+    .dcc-kpi.dcc-ok      .dcc-kpi-val { color:var(--green,#22c55e); }
+    .dcc-list { padding:4px 0 8px; }
+    .dcc-row { display:flex; align-items:center; gap:10px; padding:8px 16px; cursor:pointer; transition:background .15s; }
+    .dcc-row:hover { background:var(--surface-2,#f8fafc); }
+    .dcc-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .dcc-info { flex:1; min-width:0; }
+    .dcc-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-1,#1a202c); }
+    .dcc-type { font-size:11px; color:var(--text-3,#94a3b8); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .dcc-days { font-size:12px; font-weight:800; white-space:nowrap; flex-shrink:0; }
+    .dcc-budget-bar { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-top:1px solid var(--border,#e2e8f0); margin-top:2px; }
+    .dcc-budget-label { font-size:11px; color:var(--text-3,#94a3b8); text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
+    .dcc-budget-val { font-size:14px; font-weight:800; color:var(--text-1,#1a202c); font-family:var(--font-head,inherit); }
+    .dcc-empty { padding:20px 16px; text-align:center; font-size:13px; color:var(--text-3,#94a3b8); }
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ─── Widget contrats dashboard ───────────────────────────────── */
+function _buildDashContrats() {
+  const contrats = cache.contrats || [];
+  const actifs   = contrats.filter(c => c.actif !== false);
+  const expires  = actifs.filter(c => daysUntil(c.date_echeance) < 0);
+  const alertes  = actifs.filter(c => { const d = daysUntil(c.date_echeance); return d >= 0 && d <= (c.alerte_jours ?? 90); });
+  const conformes= actifs.filter(c => daysUntil(c.date_echeance) > (c.alerte_jours ?? 90));
+  const budget   = actifs.reduce((s, c) => s + (c.montant_annuel || 0), 0);
+  const urgents  = [...expires, ...alertes]
+    .sort((a, b) => new Date(a.date_echeance) - new Date(b.date_echeance))
+    .slice(0, 4);
+  const fmtEur   = n => n.toLocaleString('fr-FR', { minimumFractionDigits:0 }) + ' €';
+
+  function _rowMeta(c) {
+    const d = daysUntil(c.date_echeance);
+    if (d < 0)   return { color:'var(--red,#ef4444)',   label:`Expiré (${-d}j)`, css:'color:var(--red,#ef4444)' };
+    if (d <= 30) return { color:'var(--red,#ef4444)',   label:`${d}j ⚠️`,         css:'color:var(--red,#ef4444)' };
+    return             { color:'var(--amber,#f59e0b)', label:`${d}j`,            css:'color:var(--amber,#f59e0b)' };
+  }
+
+  const headerColor = expires.length > 0 ? 'color:var(--red,#ef4444);' : alertes.length > 0 ? 'color:var(--amber,#f59e0b);' : '';
+  const titleIcon   = expires.length > 0 ? '🔴' : alertes.length > 0 ? '⚠️' : '📄';
+
+  return `
+    <div class="card dash2-card" style="animation:pageIn .3s .38s both;">
+      <div class="card-header">
+        <span class="card-title dash2-card-title" style="${headerColor}">${titleIcon} Contrats fournisseurs</span>
+        <button class="btn btn-ghost btn-sm" onclick="nav('contrats')">Gérer →</button>
+      </div>
+      <div class="dcc-kpis">
+        <div class="dcc-kpi ${expires.length  ? 'dcc-danger'  : ''}">
+          <div class="dcc-kpi-val">${expires.length}</div>
+          <div class="dcc-kpi-label">Expirés</div>
+        </div>
+        <div class="dcc-kpi ${alertes.length  ? 'dcc-warning' : ''}">
+          <div class="dcc-kpi-val">${alertes.length}</div>
+          <div class="dcc-kpi-label">En alerte</div>
+        </div>
+        <div class="dcc-kpi dcc-ok">
+          <div class="dcc-kpi-val">${conformes.length}</div>
+          <div class="dcc-kpi-label">Conformes</div>
+        </div>
+      </div>
+      <div class="dcc-list">
+        ${urgents.length === 0
+          ? `<div class="dcc-empty">✅ Tous les contrats sont conformes</div>`
+          : urgents.map(c => {
+              const m = _rowMeta(c);
+              return `<div class="dcc-row" onclick="nav('contrats')">
+                <div class="dcc-dot" style="background:${m.color};"></div>
+                <div class="dcc-info">
+                  <div class="dcc-name">${c.fournisseur}</div>
+                  <div class="dcc-type">${c.type_contrat||''}${c.contact_nom?' · '+c.contact_nom:''}</div>
+                </div>
+                <div class="dcc-days" style="${m.css}">${m.label}</div>
+              </div>`;
+            }).join('')
+        }
+      </div>
+      <div class="dcc-budget-bar">
+        <span class="dcc-budget-label">💰 Budget annuel (actifs)</span>
+        <span class="dcc-budget-val">${fmtEur(budget)}</span>
+      </div>
+    </div>`;
+}
+
 async function renderDashboard() {
   const el = $('page');
 
@@ -22,9 +120,6 @@ async function renderDashboard() {
   _dashFocusZone = null;
 
   const recent = t.slice(0, 6);
-
-  // Contrats expirants
-  const expirants = isManager() ? cache.contrats.filter(c => { const d = daysUntil(c.date_echeance); return d >= 0 && d <= 90; }) : [];
 
   el.innerHTML = `
   <div class="dash2" id="dash-content">
@@ -165,25 +260,7 @@ async function renderDashboard() {
           </div>
         </div>
 
-        ${expirants.length > 0 ? `
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title" style="color:var(--amber);">⚠️ Contrats à renouveler</span>
-            <button class="btn btn-ghost btn-sm" onclick="nav('contrats')">Voir →</button>
-          </div>
-          <div style="padding:8px 16px 12px;">
-            ${expirants.map(c => {
-              const d = daysUntil(c.date_echeance);
-              return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-                <div>
-                  <div style="font-size:13px;font-weight:600;">${c.fournisseur}</div>
-                  <div style="font-size:11px;color:var(--text-3);">${c.type_contrat}</div>
-                </div>
-                <span style="font-size:12px;font-weight:700;color:${d<=30?'var(--red)':'var(--amber)'};">${d}j</span>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>` : ''}
+        ${isManager() ? _buildDashContrats() : ''}
 
         <div class="card dash2-card" id="dash-events-widget">
           <div class="card-header">
@@ -307,15 +384,14 @@ function getDashTicketsForRecent() {
 function getDashTicketsForZones() {
   const list = cache.tickets || [];
   const mode = _dashFocusMode;
-  if (mode === 'tout') return list.filter(t => isOpenStatut(t.statut)); // comportement historique
-  // Le focus suit la logique de "récent", sauf pour la vue tout (open only)
+  if (mode === 'tout') return list.filter(t => isOpenStatut(t.statut));
   return getDashTicketsForRecent();
 }
 
 function getDashTicketsForChart() {
   const list = cache.tickets || [];
   const mode = _dashFocusMode;
-  if (mode === 'tout') return list; // comportement historique
+  if (mode === 'tout') return list;
   return getDashTicketsForRecent();
 }
 
@@ -324,7 +400,7 @@ function renderDashRecentListHTML(list) {
     ouvert: emptyState('✅', 'Tout va bien !', 'Aucun signalement en cours dans la résidence.', '<button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ Signaler un problème</button>'),
     critique: emptyState('🔍', 'Pas de critique pour le moment', 'Rien de critique à traiter dans la résidence.', '<button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ Signaler un problème</button>'),
     resolu: emptyState('🎉', 'Rien à afficher', 'Pas de résolutions récentes dans cette vue.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir tout →</button>`),
-    mine: emptyState('👤', 'Aucun ticket actif', 'Vous n’avez pas de signalement ouvert en ce moment.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir mes tickets →</button>`),
+    mine: emptyState('👤', 'Aucun ticket actif', 'Vous n'avez pas de signalement ouvert en ce moment.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir mes tickets →</button>`),
     transmis: emptyState('📤', 'Rien en attente', 'Aucun ticket transmis à gérer actuellement.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir →</button>`),
     zone: emptyState('🧭', 'Aucune anomalie ici', 'Aucun signalement ouvert dans cette zone.', `<button class="btn btn-secondary btn-sm" onclick="nav('tickets')">Voir →</button>`)
   };
@@ -378,7 +454,6 @@ function refreshDashFocus() {
   const zoneEl = $('dash-zone-list');
   if (!recentEl || !zoneEl) return;
 
-  // Focus chips UI
   const bar = $('dash-focusbar');
   if (bar) {
     bar.querySelectorAll('[data-dash-focus]').forEach(btn => {
@@ -398,7 +473,6 @@ function refreshDashFocus() {
   recentEl.innerHTML = renderDashRecentListHTML(recentTickets);
   zoneEl.innerHTML = renderDashZonesListHTML(zonesTickets);
 
-  // Re-render chart with focus
   renderDashChart();
 }
 
@@ -418,7 +492,7 @@ async function loadDashboardWidgets() {
         const d = new Date(e.date_debut);
         const dateStr = d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
         const timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
-        const isImmi = (d - new Date()) < 86400000; // moins de 24h
+        const isImmi = (d - new Date()) < 86400000;
         return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="nav('agenda')">
           <div style="width:4px;height:36px;border-radius:2px;background:${t.color};flex-shrink:0;"></div>
           <div style="flex:1;min-width:0;">
@@ -429,7 +503,6 @@ async function loadDashboardWidgets() {
         </div>`;
       }).join('');
     }
-    // Rappel push pour événements dans moins de 24h
     (evts || []).filter(e => {
       const d = new Date(e.date_debut);
       const diff = d - new Date();
@@ -459,7 +532,6 @@ async function loadDashboardWidgets() {
         </div>`).join('');
     }
   }
-  // Graphique activité mensuelle
   renderDashChart();
 }
 
@@ -470,7 +542,6 @@ function renderDashChart() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const tipEl = $('dash-chart-tip');
 
-  // Génère les 6 derniers mois
   const months = [];
   const now = new Date();
   for (let i = 5; i >= 0; i--) {
@@ -484,7 +555,6 @@ function renderDashChart() {
 
   const ticketsForChart = getDashTicketsForChart();
 
-  // Compte les tickets par mois
   const created = months.map(m =>
     ticketsForChart.filter(t => {
       const d = new Date(t.created_at);
@@ -504,7 +574,6 @@ function renderDashChart() {
   const accentColor = '#2563eb';
   const greenColor = '#10b981';
 
-  // Dimensions
   const W = canvas.offsetWidth || 300;
   const H = 120;
   canvas.width = W;
@@ -518,7 +587,6 @@ function renderDashChart() {
 
   ctx.clearRect(0, 0, W, H);
 
-  // Grille horizontale
   for (let i = 0; i <= 3; i++) {
     const y = pad.top + (cH / 3) * i;
     ctx.strokeStyle = gridColor;
@@ -532,32 +600,24 @@ function renderDashChart() {
     }
   }
 
-  // Barres
   months.forEach((m, i) => {
     const x = pad.left + (cW / months.length) * i + (cW / months.length) * 0.1;
-
-    // Barres créés (bleu)
     const h1 = (created[i] / maxVal) * cH;
     ctx.fillStyle = accentColor;
     ctx.beginPath();
     ctx.roundRect(x, pad.top + cH - h1, barW, h1, [3, 3, 0, 0]);
     ctx.fill();
-
-    // Barres résolus (vert)
     const h2 = (resolved[i] / maxVal) * cH;
     ctx.fillStyle = greenColor;
     ctx.beginPath();
     ctx.roundRect(x + barW + barGap, pad.top + cH - h2, barW, h2, [3, 3, 0, 0]);
     ctx.fill();
-
-    // Label mois
     ctx.fillStyle = textColor;
     ctx.font = '10px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(m.label, x + barW + barGap / 2, H - 6);
   });
 
-  // Légende
   const legendX = W - pad.right - 120;
   ctx.fillStyle = accentColor;
   ctx.fillRect(legendX, 4, 10, 8);
@@ -570,37 +630,25 @@ function renderDashChart() {
   ctx.fillStyle = textColor;
   ctx.fillText('Résolus', legendX + 70, 12);
 
-  // Tooltip au survol (premium UX)
   if (tipEl) {
     const wrap = canvas.closest('.dash2-chart-wrap') || canvas.parentElement;
     if (wrap) {
       const padL = pad.left;
       const plotW = cW;
       const perMonthW = plotW / months.length;
-
       const handler = (e) => {
         const rect = wrap.getBoundingClientRect();
         const px = e.clientX - rect.left;
         const py = e.clientY - rect.top;
-
         const inside = px >= padL && px <= padL + plotW;
-        if (!inside) {
-          tipEl.style.display = 'none';
-          return;
-        }
-
+        if (!inside) { tipEl.style.display = 'none'; return; }
         const idx = Math.floor((px - padL) / perMonthW);
-        if (idx < 0 || idx >= months.length) {
-          tipEl.style.display = 'none';
-          return;
-        }
-
+        if (idx < 0 || idx >= months.length) { tipEl.style.display = 'none'; return; }
         tipEl.style.display = 'block';
         tipEl.style.left = `${px}px`;
         tipEl.style.top = `${Math.max(8, py)}px`;
         tipEl.innerHTML = `<b>${months[idx].label}</b><div style="margin-top:6px;">Créés : ${created[idx]}<br>Résolus : ${resolved[idx]}</div>`;
       };
-
       if (canvas.__dashHoverHandler) canvas.removeEventListener('mousemove', canvas.__dashHoverHandler);
       canvas.__dashHoverHandler = handler;
       canvas.addEventListener('mousemove', handler);
@@ -812,10 +860,8 @@ function filterTickets() {
   const active = s || st || u || b;
   const f = getFilteredTickets();
   d($('tickets-tbody'), renderTicketsRows(f));
-  // Compteur résultats
   const cEl = $('f-count');
   if (cEl) cEl.textContent = active ? `${f.length} résultat${f.length>1?'s':''}` : '';
-  // Bouton reset
   const rEl = $('f-reset');
   if (rEl) rEl.style.display = active ? 'inline-flex' : 'none';
   renderBulkTicketBar();
