@@ -1,217 +1,213 @@
 // ─────────────────────────────────────────────
-// DASHBOARD V2 PRO MAX ⚡
-// Clean / Performant / Scalable
+// DASHBOARD V3 — PREMIUM EXPERIENCE ✨
+// Animations / Drag & Drop / Dark Mode
 // ─────────────────────────────────────────────
 
-let _dashFocusMode = 'tout';
-let _dashFocusZone = null;
+let _dashLayout = JSON.parse(localStorage.getItem('dash_layout_v3') || 'null') || [
+  'recent',
+  'contracts'
+];
 
 /* ─────────────────────────────────────────────
-   UTILS PERF
+   THEME (LIGHT / DARK AUTO + TOGGLE)
 ───────────────────────────────────────────── */
-const dashUtils = {
-  fmtDate: () =>
-    new Date().toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }),
+(function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  fmtTime: () =>
-    new Date().toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    }),
+  const theme = saved || (prefersDark ? 'dark' : 'light');
 
-  safe: (str) => (str ? escHtml(str) : ''),
+  document.documentElement.setAttribute('data-theme', theme);
+})();
 
-  plural: (n, word) => n + ' ' + word + (n > 1 ? 's' : '')
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+}
+
+/* ─────────────────────────────────────────────
+   CSS V3 (ANIMATIONS + DARK MODE)
+───────────────────────────────────────────── */
+(function injectV3CSS() {
+  if (document.getElementById('dash-v3')) return;
+
+  const s = document.createElement('style');
+  s.id = 'dash-v3';
+
+  s.textContent = `
+  :root {
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+  }
+
+  [data-theme="dark"] {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    transition: background .4s ease, color .4s ease;
+  }
+
+  .dash {
+    padding: 20px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.08);
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,.12);
+  }
+
+  /* Animation entrance */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px) scale(.98);
+    animation: fadeIn .5s forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Drag */
+  .dragging {
+    opacity: .5;
+    transform: scale(.95);
+  }
+
+  .drop-zone {
+    border: 2px dashed var(--muted);
+    border-radius: 12px;
+    margin: 10px 0;
+  }
+
+  .btn-theme {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999;
+  }
+  `;
+
+  document.head.appendChild(s);
+})();
+
+/* ─────────────────────────────────────────────
+   WIDGETS
+───────────────────────────────────────────── */
+const widgets = {
+  recent: () => `
+    <div class="card fade-in" draggable="true" data-widget="recent">
+      <h3>📋 Signalements</h3>
+      ${buildRecentList(cache.tickets || [])}
+    </div>
+  `,
+
+  contracts: () => `
+    <div class="card fade-in" draggable="true" data-widget="contracts">
+      <h3>📄 Contrats</h3>
+      ${buildContractsWidget()}
+    </div>
+  `
 };
 
 /* ─────────────────────────────────────────────
-   CACHE COMPUTÉ (GAIN PERF)
+   DRAG & DROP ENGINE
 ───────────────────────────────────────────── */
-function computeStats(tickets) {
-  return {
-    ouverts: tickets.filter(t => t.statut !== 'résolu' && t.statut !== 'clos'),
-    critiques: tickets.filter(t => t.urgence === 'critique' && t.statut !== 'résolu' && t.statut !== 'clos'),
-    syndic: tickets.filter(t => t.statut === 'transmis_syndic'),
-    resolus: tickets.filter(t => t.statut === 'résolu' || t.statut === 'clos')
-  };
-}
+function initDragAndDrop(container) {
+  let dragged = null;
 
-/* ─────────────────────────────────────────────
-   SITUATION ROOM (UPGRADE)
-───────────────────────────────────────────── */
-function buildSituation(stats) {
-  const { critiques, syndic } = stats;
+  container.querySelectorAll('[draggable=true]').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragged = el;
+      el.classList.add('dragging');
+    });
 
-  const contrats = cache.contrats || [];
-  const actifs = contrats.filter(c => c.actif !== false);
-
-  const expires = actifs.filter(c => daysUntil(c.date_echeance) < 0);
-  const alertes = actifs.filter(c => {
-    const d = daysUntil(c.date_echeance);
-    return d >= 0 && d <= (c.alerte_jours ?? 90);
+    el.addEventListener('dragend', () => {
+      dragged.classList.remove('dragging');
+    });
   });
 
-  let state = 'green';
-  let phrase = 'Tout est sous contrôle';
-
-  if (critiques.length || expires.length) {
-    state = 'red';
-    phrase = `🚨 ${dashUtils.plural(critiques.length, 'critique')} · ${dashUtils.plural(expires.length, 'contrat expiré')}`;
-  } else if (alertes.length || syndic.length) {
-    state = 'orange';
-    phrase = `⚠️ ${dashUtils.plural(alertes.length, 'alerte')} · ${dashUtils.plural(syndic.length, 'dossier syndic')}`;
-  }
-
-  return `
-    <div class="dash-situation">
-      <div class="dash-situation-bar sr-${state}">
-        <div class="dash-situation-dot ${state !== 'green' ? 'pulse' : ''}"></div>
-        <span>${phrase}</span>
-        <span style="opacity:.6;font-size:11px;">${dashUtils.fmtTime()}</span>
-      </div>
-    </div>
-  `;
-}
-
-/* ─────────────────────────────────────────────
-   WIDGET CONTRATS (OPTIMISÉ)
-───────────────────────────────────────────── */
-function buildContractsWidget() {
-  const contrats = cache.contrats || [];
-
-  const actifs = contrats.filter(c => c.actif !== false);
-
-  const expires = actifs.filter(c => daysUntil(c.date_echeance) < 0);
-  const alertes = actifs.filter(c => {
-    const d = daysUntil(c.date_echeance);
-    return d >= 0 && d <= (c.alerte_jours ?? 90);
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    const after = getDragAfterElement(container, e.clientY);
+    if (!after) {
+      container.appendChild(dragged);
+    } else {
+      container.insertBefore(dragged, after);
+    }
   });
 
-  const conformes = actifs.length - expires.length - alertes.length;
+  container.addEventListener('drop', () => {
+    saveLayout(container);
+  });
+}
 
-  const budget = actifs.reduce((s, c) => s + (c.montant_annuel || 0), 0);
+function getDragAfterElement(container, y) {
+  const els = [...container.querySelectorAll('[draggable=true]:not(.dragging)')];
 
-  return `
-    <div class="card dash2-card">
-      <div class="card-header">
-        <span class="card-title">📄 Contrats</span>
-        <button class="btn btn-ghost btn-sm" onclick="nav('contrats')">→</button>
-      </div>
+  return els.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
 
-      <div class="dcc-kpis">
-        <div class="dcc-kpi dcc-danger">${expires.length}<span>Expirés</span></div>
-        <div class="dcc-kpi dcc-warning">${alertes.length}<span>Alertes</span></div>
-        <div class="dcc-kpi dcc-ok">${conformes}<span>OK</span></div>
-      </div>
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
 
-      <div class="dcc-budget-bar">
-        <span>💰 Budget</span>
-        <strong>${budget.toLocaleString()} €</strong>
-      </div>
-    </div>
-  `;
+function saveLayout(container) {
+  const order = [...container.children].map(el => el.dataset.widget);
+  localStorage.setItem('dash_layout_v3', JSON.stringify(order));
 }
 
 /* ─────────────────────────────────────────────
-   LISTE SIGNALMENTS (ULTRA CLEAN)
+   RENDER V3
 ───────────────────────────────────────────── */
-function buildRecentList(tickets) {
-  if (!tickets.length) {
-    return `
-      <div class="empty">
-        ✅ Aucun signalement
-      </div>
-    `;
-  }
-
-  return tickets.slice(0, 6).map(t => {
-    const urgency = t.urgence === 'critique'
-      ? '🔴'
-      : t.urgence === 'important'
-      ? '🟠'
-      : '🔵';
-
-    return `
-      <div class="act-item" onclick="openDetail('${t.id}')">
-        <div>${urgency}</div>
-        <div>
-          <div>${dashUtils.safe(t.titre)}</div>
-          <div class="muted">${dashUtils.safe(t.batiment || '')}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-/* ─────────────────────────────────────────────
-   RENDER PRINCIPAL (REFACTOR TOTAL)
-───────────────────────────────────────────── */
-async function renderDashboard() {
+function renderDashboardV3() {
   const el = $('page');
 
-  if (!cache.tickets && !isCopro()) {
-    el.innerHTML = `<div class="skeleton">Chargement…</div>`;
-    return;
-  }
-
-  const tickets = cache.tickets || [];
-
-  const stats = computeStats(tickets);
-
-  const situation = isManager()
-    ? buildSituation(stats)
-    : '';
-
   el.innerHTML = `
-    <div class="dash2">
+    <div class="dash">
 
-      <!-- HERO -->
-      <section class="dash2-hero">
-        <h1>
-          Bonjour ${displayName(profile?.prenom, profile?.nom).split(' ')[0]} 👋
-        </h1>
-        <p>${dashUtils.fmtDate()}</p>
+      <button class="btn btn-theme" onclick="toggleTheme()">
+        🌙 Mode
+      </button>
 
-        <div class="dash2-actions">
-          <button class="btn btn-primary" onclick="openNewTicket()">+ Signaler</button>
-          <button class="btn btn-secondary" onclick="nav('tickets')">Voir</button>
-        </div>
-      </section>
+      <h1 class="fade-in">Dashboard Premium ✨</h1>
 
-      ${situation}
-
-      <!-- KPI -->
-      <section class="stats-row">
-        <div class="stat">${stats.ouverts.length}<span>Ouverts</span></div>
-        <div class="stat red">${stats.critiques.length}<span>Critiques</span></div>
-        <div class="stat green">${stats.resolus.length}<span>Résolus</span></div>
-      </section>
-
-      <!-- GRID -->
-      <section class="dash2-grid">
-
-        <!-- LEFT -->
-        <div class="card">
-          <div class="card-header">
-            Signalements récents
-          </div>
-          <div class="card-content">
-            ${buildRecentList(tickets)}
-          </div>
-        </div>
-
-        <!-- RIGHT -->
-        <div class="dash2-stack">
-          ${isManager() ? buildContractsWidget() : ''}
-        </div>
-
-      </section>
+      <div id="dash-widgets"></div>
 
     </div>
   `;
+
+  const container = document.getElementById('dash-widgets');
+
+  container.innerHTML = _dashLayout
+    .map(id => widgets[id]?.() || '')
+    .join('');
+
+  initDragAndDrop(container);
 }
