@@ -1,3 +1,9 @@
+// ══════════════════════════════════════════════════════
+//  REGISTER PAGE — CoproSync
+//  Standalone (no global sb, no global helpers)
+//  Fixes: sb scope, profile upsert guard, error handling
+// ══════════════════════════════════════════════════════
+
 function checkRegisterMode() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('register') === '1') {
@@ -10,186 +16,648 @@ function checkRegisterMode() {
 function showRegisterPage() {
   document.body.innerHTML = `
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Sans:wght@400;500;600&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Instrument Sans', sans-serif; background: #0c0b09; min-height: 100vh; min-height: 100dvh; display: flex; align-items: stretch; overflow-x: hidden; }
-    body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background: radial-gradient(ellipse 70% 50% at 0% 100%, rgba(124,58,237,.1) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 100% 0%, rgba(37,99,235,.08) 0%, transparent 60%); }
-    body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background-image: linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-      background-size: 40px 40px; mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 0%, transparent 100%); }
-    .reg-split { display: flex; width: 100%; max-width: 1000px; margin: auto; align-items: center; padding: 40px; gap: 64px; position: relative; z-index: 1; }
-    .reg-left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 20px 0; }
-    .reg-step-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); border-radius: 20px; padding: 5px 14px; width: fit-content; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.4); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 24px; }
-    .reg-step-badge span { color: #818cf8; }
-    .reg-title { font-family: 'Syne', sans-serif; font-size: clamp(32px, 4.5vw, 54px); font-weight: 800; line-height: 1.05; letter-spacing: -2px; color: #fff; margin-bottom: 18px; }
-    .reg-title em { font-style: normal; background: linear-gradient(135deg, #818cf8, #c4b5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .reg-desc { font-size: 14px; color: rgba(255,255,255,.35); line-height: 1.8; max-width: 340px; margin-bottom: 36px; }
-    .reg-features { display: flex; flex-direction: column; gap: 14px; }
-    .reg-feature { display: flex; align-items: center; gap: 12px; }
-    .reg-feature-ico { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .reg-feature-txt { font-size: 13px; color: rgba(255,255,255,.4); line-height: 1.4; }
-    .reg-feature-txt strong { color: rgba(255,255,255,.7); font-weight: 600; display: block; }
-    .reg-box { width: 100%; max-width: 420px; flex-shrink: 0; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 24px; padding: 36px; backdrop-filter: blur(20px); box-shadow: 0 32px 64px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06); }
-    .reg-box-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; letter-spacing: -.3px; }
-    .reg-box-sub { font-size: 12px; color: rgba(255,255,255,.3); margin-bottom: 28px; }
-    .fg { margin-bottom: 14px; }
-    .label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.3); display: block; margin-bottom: 6px; }
-    .input { width: 100%; padding: 11px 14px; background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.1); border-radius: 10px; font-size: 14px; color: #fff; outline: none; font-family: 'Instrument Sans', sans-serif; transition: all .2s; }
-    .input:focus { border-color: rgba(129,140,248,.6); background: rgba(255,255,255,.08); box-shadow: 0 0 0 3px rgba(129,140,248,.1); }
-    .input::placeholder { color: rgba(255,255,255,.18); }
-    select.input { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' stroke='rgba(255,255,255,.3)' stroke-width='2' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; appearance: none; }
-    select.input option { background: #1c1b19; color: #fff; }
-    .fg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .error { color: #f87171; font-size: 12px; margin-bottom: 12px; display: none; background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2); border-radius: 8px; padding: 8px 12px; }
-    .btn-reg { width: 100%; padding: 14px; background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Instrument Sans', sans-serif; margin-top: 8px; letter-spacing: .02em; box-shadow: 0 8px 20px rgba(99,102,241,.35); transition: all .2s; }
-    .btn-reg:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(99,102,241,.45); }
-    .btn-reg:disabled { opacity: .55; transform: none; box-shadow: none; cursor: not-allowed; }
-    .reg-footer { text-align: center; margin-top: 20px; font-size: 12px; color: rgba(255,255,255,.25); }
-    .reg-footer a { color: rgba(129,140,248,.7); text-decoration: none; font-weight: 600; }
-    .success { text-align: center; padding: 20px 10px; }
-    .success-ico { font-size: 52px; margin-bottom: 16px; display: block; }
-    .success-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 10px; letter-spacing: -.3px; }
-    .success-txt { font-size: 13.5px; color: rgba(255,255,255,.4); line-height: 1.7; }
-    .success-btn { display: inline-block; margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 13px; }
-    @media (max-width: 720px) {
-      .reg-split { flex-direction: column; padding: 24px 20px; gap: 28px; }
-      .reg-left { align-items: center; text-align: center; }
-      .reg-title { font-size: 32px; }
-      .reg-desc, .reg-features { display: none; }
-      .reg-box { max-width: 100%; padding: 28px 22px; }
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f7f3ec;
+      --ink:   #1c1a16;
+      --muted: #7a7165;
+      --line:  #e2ddd4;
+      --accent:#2d5be3;
+      --red:   #c0392b;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--ink);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    .reg-page {
+      position: relative; z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      min-height: 100dvh;
+    }
+
+    /* ── Left panel ── */
+    .reg-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 56px;
+      border-right: 1px solid var(--line);
+    }
+
+    .reg-wordmark {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+      color: var(--ink);
+    }
+
+    .reg-hero {
+      padding: 20px 0;
+    }
+
+    .reg-eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .reg-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 28px; height: 1px;
+      background: var(--muted);
+    }
+
+    .reg-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(38px, 4vw, 58px);
+      line-height: 1.08;
+      letter-spacing: -1.5px;
+      color: var(--ink);
+      margin-bottom: 28px;
+    }
+
+    .reg-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .reg-desc {
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 380px;
+      margin-bottom: 48px;
+    }
+
+    .reg-features {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .reg-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .reg-feature-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 11px;
+      color: var(--muted);
+      padding-top: 2px;
+      min-width: 20px;
+    }
+
+    .reg-feature-body strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .reg-feature-body span {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    .reg-footer-line {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Right panel ── */
+    .reg-right {
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 56px 48px;
+      border-left: 1px solid var(--line);
+      position: relative;
+    }
+
+    .reg-form-header {
+      margin-bottom: 40px;
+    }
+
+    .reg-form-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      letter-spacing: -0.5px;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .reg-form-sub {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    /* ── Form fields ── */
+    .rf-group {
+      margin-bottom: 18px;
+    }
+
+    .rf-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .rf-input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--ink);
+      background: #fafaf8;
+      outline: none;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .rf-input:focus {
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(45, 91, 227, 0.1);
+    }
+
+    .rf-input::placeholder { color: #bbb8b2; }
+
+    .rf-input.error {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.08);
+    }
+
+    .rf-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .rf-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7165' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      cursor: pointer;
+    }
+
+    .rf-select option { background: #fff; color: var(--ink); }
+
+    /* ── Error banner ── */
+    .rf-error-banner {
+      display: none;
+      background: #fef4f3;
+      border: 1px solid #f5c4bc;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 13px;
+      color: var(--red);
+      font-weight: 500;
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+
+    /* ── Submit button ── */
+    .rf-submit {
+      width: 100%;
+      padding: 15px;
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      margin-top: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rf-submit::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background .15s;
+    }
+
+    .rf-submit:hover { background: #2d2b27; }
+    .rf-submit:active { transform: scale(.99); }
+
+    .rf-submit:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .rf-login-link {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    .rf-login-link a {
+      color: var(--accent);
+      font-weight: 500;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color .15s;
+    }
+
+    .rf-login-link a:hover { border-color: var(--accent); }
+
+    /* ── Hint box ── */
+    .rf-hint {
+      background: #f7f5f0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-top: -6px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Success state ── */
+    .rf-success {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 10px;
+      flex: 1;
+    }
+
+    .rf-success-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .rf-success-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      letter-spacing: -0.5px;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .rf-success-text {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 300px;
+    }
+
+    .rf-back-btn {
+      display: inline-block;
+      margin-top: 28px;
+      padding: 12px 28px;
+      background: var(--ink);
+      color: #fff;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: background .15s;
+    }
+
+    .rf-back-btn:hover { background: #2d2b27; }
+
+    /* ── Responsive ── */
+    @media (max-width: 860px) {
+      .reg-page { grid-template-columns: 1fr; }
+      .reg-left { display: none; }
+      .reg-right { padding: 40px 28px; min-height: 100dvh; }
+    }
+
+    @media (max-width: 480px) {
+      .reg-right { padding: 32px 20px; }
+      .rf-row { grid-template-columns: 1fr; gap: 0; }
+      .rf-input { font-size: 16px; }
     }
   </style>
-  <div class="reg-split">
+
+  <div class="reg-page">
+
+    <!-- LEFT -->
     <div class="reg-left">
-      <div class="reg-step-badge"><span>●</span> Nouveau résident</div>
-      <div class="reg-title">Rejoignez<br>la <em>communauté</em><br>du Floréal.</div>
-      <div class="reg-desc">Créez votre compte en 2 minutes et accédez à tous les services numériques de votre résidence.</div>
-      <div class="reg-features">
-        <div class="reg-feature"><div class="reg-feature-ico">🔧</div><div class="reg-feature-txt"><strong>Signalez facilement</strong>Problèmes dans les parties communes, suivi en temps réel</div></div>
-        <div class="reg-feature"><div class="reg-feature-ico">💬</div><div class="reg-feature-txt"><strong>Échangez avec vos voisins</strong>Messagerie par tour, fil d'actualité de la résidence</div></div>
-        <div class="reg-feature"><div class="reg-feature-ico">🗳️</div><div class="reg-feature-txt"><strong>Participez aux décisions</strong>Votes, sondages, assemblées générales</div></div>
-        <div class="reg-feature"><div class="reg-feature-ico">📄</div><div class="reg-feature-txt"><strong>Accédez aux documents</strong>PV d'AG, diagnostics, règlement de copropriété</div></div>
-      </div>
-    </div>
-    <div class="reg-box">
-      <div class="reg-box-title">Créer mon compte</div>
-      <div class="reg-box-sub">Résidence le Floréal · 13-19 rue du Moucherotte, Sassenage</div>
-      <div id="reg-form-wrap">
-        <div class="error" id="reg-error"></div>
-        <div class="fg-row">
-          <div class="fg" style="margin:0;"><label class="label">Prénom *</label><input type="text" id="reg-prenom" class="input" placeholder="Jérémy"></div>
-          <div class="fg" style="margin:0;"><label class="label">Nom *</label><input type="text" id="reg-nom" class="input" placeholder="Dupont"></div>
-        </div>
-        <div class="fg"><label class="label">Email *</label><input type="email" id="reg-email" class="input" placeholder="votre@email.com"></div>
-        <div class="fg"><label class="label">Mot de passe *</label><input type="password" id="reg-pass" class="input" placeholder="Minimum 8 caractères"></div>
-        <div class="fg-row">
-          <div class="fg" style="margin:0;"><label class="label">Ma tour *</label>
-            <select id="reg-tour" class="input"><option value="">Choisir…</option><option>Tour 13</option><option>Tour 15</option><option>Tour 17</option><option>Tour 19</option></select>
+      <div class="reg-wordmark">CoproSync</div>
+
+      <div class="reg-hero">
+        <div class="reg-eyebrow">Résidence le Floréal</div>
+        <h1 class="reg-title">Votre résidence,<br><em>connectée.</em></h1>
+        <p class="reg-desc">
+          Signalez des incidents, échangez avec vos voisins, participez aux décisions collectives — depuis votre téléphone.
+        </p>
+
+        <div class="reg-features">
+          <div class="reg-feature">
+            <span class="reg-feature-num">01</span>
+            <div class="reg-feature-body">
+              <strong>Signalements en temps réel</strong>
+              <span>Parties communes, ascenseurs, parking — tout suivi jusqu'à résolution.</span>
+            </div>
           </div>
-          <div class="fg" style="margin:0;"><label class="label">N° de lot *</label><input type="text" id="reg-lot" class="input" placeholder="Ex : 148"></div>
+          <div class="reg-feature">
+            <span class="reg-feature-num">02</span>
+            <div class="reg-feature-body">
+              <strong>Messagerie entre voisins</strong>
+              <span>Canal de votre tour, fil du quartier, messages privés.</span>
+            </div>
+          </div>
+          <div class="reg-feature">
+            <span class="reg-feature-num">03</span>
+            <div class="reg-feature-body">
+              <strong>Votes & documents</strong>
+              <span>AG, sondages, PV, règlement de copropriété accessibles.</span>
+            </div>
+          </div>
         </div>
-        <button class="btn-reg" id="reg-btn" onclick="submitRegister()">Rejoindre la résidence →</button>
       </div>
-      <div class="reg-footer">Déjà un compte ? <a href="${window.location.pathname}">Se connecter</a></div>
+
+      <div class="reg-footer-line">Sassenage, 38360 · 240 logements · 4 tours</div>
     </div>
-  </div>`
+
+    <!-- RIGHT -->
+    <div class="reg-right">
+      <div class="reg-form-header">
+        <h2 class="reg-form-title">Créer mon compte</h2>
+        <p class="reg-form-sub">13-19 rue du Moucherotte, Sassenage</p>
+      </div>
+
+      <div id="reg-form-wrap">
+        <div class="rf-error-banner" id="reg-error"></div>
+
+        <div class="rf-row">
+          <div class="rf-group">
+            <label class="rf-label">Prénom *</label>
+            <input type="text" id="reg-prenom" class="rf-input" placeholder="Marie" autocomplete="given-name">
+          </div>
+          <div class="rf-group">
+            <label class="rf-label">Nom *</label>
+            <input type="text" id="reg-nom" class="rf-input" placeholder="Dupont" autocomplete="family-name">
+          </div>
+        </div>
+
+        <div class="rf-group">
+          <label class="rf-label">Adresse email *</label>
+          <input type="email" id="reg-email" class="rf-input" placeholder="marie.dupont@email.com" autocomplete="email">
+        </div>
+
+        <div class="rf-group">
+          <label class="rf-label">Mot de passe *</label>
+          <input type="password" id="reg-pass" class="rf-input" placeholder="8 caractères minimum" autocomplete="new-password">
+        </div>
+
+        <div class="rf-row">
+          <div class="rf-group">
+            <label class="rf-label">Ma tour *</label>
+            <select id="reg-tour" class="rf-input rf-select">
+              <option value="">Choisir…</option>
+              <option>Tour 13</option>
+              <option>Tour 15</option>
+              <option>Tour 17</option>
+              <option>Tour 19</option>
+            </select>
+          </div>
+          <div class="rf-group">
+            <label class="rf-label">N° de lot *</label>
+            <input type="text" id="reg-lot" class="rf-input" placeholder="Ex : 148" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="rf-hint">
+          💡 Votre numéro de lot figure sur votre titre de propriété, votre avis de charges ou votre boîte aux lettres.
+        </div>
+
+        <button class="rf-submit" id="reg-btn" onclick="submitRegister()">
+          Rejoindre la résidence →
+        </button>
+
+        <div class="rf-login-link">
+          Déjà inscrit ? <a href="${window.location.pathname}">Se connecter</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
+
+// ══════════════════════════════════════════════════════
+//  submitRegister — version corrigée
+//  Fixes:
+//  - sb est créé localement (pas de dépendance au global)
+//  - Upsert profile avec guard sur session confirmée
+//  - Feed post avec double tentative silencieuse
+//  - Email notification avec catch propre
+//  - Validation côté client plus robuste
+// ══════════════════════════════════════════════════════
 async function submitRegister() {
   const prenom = document.getElementById('reg-prenom')?.value.trim();
   const nom    = document.getElementById('reg-nom')?.value.trim();
-  const email  = document.getElementById('reg-email')?.value.trim();
+  const email  = document.getElementById('reg-email')?.value.trim().toLowerCase();
   const pass   = document.getElementById('reg-pass')?.value;
   const tour   = document.getElementById('reg-tour')?.value;
   const lot    = document.getElementById('reg-lot')?.value.trim();
   const errEl  = document.getElementById('reg-error');
   const btn    = document.getElementById('reg-btn');
 
-  errEl.style.display = 'none';
-  if (!prenom || !email || !pass || !tour || !lot) {
-    errEl.textContent = 'Tous les champs marqués * sont obligatoires.';
-    errEl.style.display = 'block'; return;
-  }
-  if (pass.length < 8) {
-    errEl.textContent = 'Le mot de passe doit contenir au moins 8 caractères.';
-    errEl.style.display = 'block'; return;
+  function showErr(msg) {
+    if (!errEl) return;
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    // Highlight empty required fields
+    ['reg-prenom','reg-email','reg-pass','reg-tour','reg-lot'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('error', !el.value.trim());
+    });
   }
 
-  btn.disabled = true; btn.textContent = 'Création en cours…';
+  if (errEl) errEl.style.display = 'none';
+  document.querySelectorAll('.rf-input').forEach(el => el.classList.remove('error'));
 
-  // Crée le compte Supabase
+  // ── Validation ──
+  if (!prenom) { showErr('Le prénom est obligatoire.'); return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showErr('Veuillez saisir une adresse email valide.'); return;
+  }
+  if (!pass || pass.length < 8) {
+    showErr('Le mot de passe doit contenir au moins 8 caractères.'); return;
+  }
+  if (!tour) { showErr('Veuillez sélectionner votre tour.'); return; }
+  if (!lot)  { showErr('Le numéro de lot est obligatoire.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Création en cours…';
+
+  // ── Supabase client LOCAL (pas de dépendance au global `sb`) ──
   const SUPA_URL = 'https://sifjbqtnrfydxcemhsnz.supabase.co';
   const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZmpicXRucmZ5ZHhjZW1oc256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzIyMjYsImV4cCI6MjA4ODkwODIyNn0.aRZUunTn1W5hLNHRXDSWjp7hKcBtxQlFKSM05MTQyVE';
 
-  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-  const sb2 = createClient(SUPA_URL, SUPA_KEY);
-
-  const { data, error } = await sb2.auth.signUp({
-    email, password: pass,
-    options: { data: { prenom, nom, tour, lot, role: 'copropriétaire' } }
-  });
-
-  if (error) {
-    errEl.textContent = error.message === 'User already registered'
-      ? 'Cet email est déjà utilisé. Connectez-vous ou utilisez un autre email.'
-      : error.message;
-    errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Créer mon compte →';
+  let sb2;
+  try {
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sb2 = createClient(SUPA_URL, SUPA_KEY);
+  } catch (e) {
+    showErr('Impossible de charger la librairie. Vérifiez votre connexion.');
+    btn.disabled = false; btn.textContent = 'Rejoindre la résidence →';
     return;
   }
 
-  // Met à jour le profil avec toutes les infos
-  if (data.user) {
-    await sb2.from('profiles').upsert({
-      id: data.user.id, email, prenom, nom: nom||null,
-      tour, lot, role: 'copropriétaire', actif: true
-    }, { onConflict: 'id' });
+  // ── Création du compte ──
+  const { data, error } = await sb2.auth.signUp({
+    email,
+    password: pass,
+    options: {
+      data: { prenom, nom: nom || null, tour, lot, role: 'copropriétaire' }
+    }
+  });
 
-    // Notif email au syndic
-    await fetch('https://sifjbqtnrfydxcemhsnz.supabase.co/functions/v1/send-email', {
+  if (error) {
+    const msgs = {
+      'User already registered':    'Cette adresse email est déjà utilisée. <a href="' + window.location.pathname + '">Se connecter</a>',
+      'Password should be at least 6 characters': 'Le mot de passe doit contenir au moins 8 caractères.',
+      'Unable to validate email address: invalid format': 'Format d\'email invalide.',
+    };
+    const msg = msgs[error.message] || ('Erreur : ' + error.message);
+    if (errEl) { errEl.innerHTML = msg; errEl.style.display = 'block'; }
+    btn.disabled = false; btn.textContent = 'Rejoindre la résidence →';
+    return;
+  }
+
+  // ── Upsert profile ──
+  // FIX: on upsert uniquement si on a un user.id valide
+  if (data?.user?.id) {
+    const profileRow = {
+      id: data.user.id,
+      email,
+      prenom,
+      nom: nom || null,
+      tour,
+      lot,
+      role: 'copropriétaire',
+      actif: true
+    };
+
+    // Tentative d'upsert — peut échouer si la confirmation email n'est pas encore faite
+    // On utilise try/catch silencieux car le trigger handle_new_user crée le profil aussi
+    try {
+      await sb2.from('profiles').upsert(profileRow, { onConflict: 'id' });
+    } catch (profileErr) {
+      // Non-bloquant : le trigger SQL crée le profil à la confirmation
+      console.warn('[register] profile upsert skipped:', profileErr?.message);
+    }
+
+    // ── Notif email syndic ── (non-bloquant)
+    fetch('https://sifjbqtnrfydxcemhsnz.supabase.co/functions/v1/send-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_KEY}` },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPA_KEY}`
+      },
       body: JSON.stringify({
         type: 'nouvelle_annonce',
         to: null,
         data: {
-          titre: `👤 Nouveau résident inscrit : ${prenom} ${nom||''}`,
+          titre: `👤 Nouvel inscrit : ${prenom}${nom ? ' ' + nom : ''}`,
           type: 'important',
-          contenu: `${prenom} ${nom||''} vient de créer son compte. Tour : ${tour} · Lot : ${lot} · Email : ${email}`
+          contenu: `Inscription · Tour : ${tour} · Lot : ${lot} · Email : ${email}`
         }
       })
-    }).catch(()=>{});
+    }).catch(() => {}); // Silencieux
 
-    // Publie dans le feed communautaire
-    const feedMemberRow = {
+    // ── Post dans le feed ── (non-bloquant, double tentative)
+    const feedRow = {
       auteur_id: data.user.id,
-      contenu: `👋 ${prenom}${nom?' '+nom:''} vient de rejoindre la résidence !${tour?' ('+tour+')':''}`,
+      contenu: `👋 ${prenom}${nom ? ' ' + nom : ''} vient de rejoindre la résidence !${tour ? ' (' + tour + ')' : ''}`,
       type: 'member',
       categorie: 'vie_quartier',
     };
-    let fr = await sb2.from('feed_posts').insert(feedMemberRow);
-    if (fr.error) {
-      await sb2.from('feed_posts').insert({
-        auteur_id: feedMemberRow.auteur_id,
-        contenu: feedMemberRow.contenu,
-        type: feedMemberRow.type,
-      });
-    }
+
+    sb2.from('feed_posts').insert(feedRow)
+      .then(res => {
+        if (res.error) {
+          // Fallback sans colonnes optionnelles
+          sb2.from('feed_posts').insert({
+            auteur_id: feedRow.auteur_id,
+            contenu: feedRow.contenu,
+            type: feedRow.type,
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {});
   }
 
-  // Remplace le formulaire par un message de succès
-  document.getElementById('reg-form-wrap').innerHTML = `
-    <div class="success">
-      <div class="success-ico">🎉</div>
-      <div class="success-title">Compte créé !</div>
-      <div class="success-txt">
-        Bienvenue ${prenom} !<br><br>
-        Un email de confirmation vous a été envoyé à <strong>${email}</strong>.<br>
-        Cliquez sur le lien pour activer votre compte puis connectez-vous.
-      </div>
-      <br>
-      <a href="${window.location.pathname}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;margin-top:8px;">
-        Aller à la connexion →
-      </a>
-    </div>`;
+  // ── Succès ──
+  const wrap = document.getElementById('reg-form-wrap');
+  if (wrap) {
+    wrap.innerHTML = `
+      <div class="rf-success">
+        <div class="rf-success-icon">✓</div>
+        <h3 class="rf-success-title">Bienvenue, ${prenom} !</h3>
+        <p class="rf-success-text">
+          Un email de confirmation a été envoyé à <strong>${email}</strong>.<br><br>
+          Cliquez sur le lien reçu pour activer votre compte, puis connectez-vous.
+        </p>
+        <a href="${window.location.pathname}" class="rf-back-btn">
+          Aller à la connexion →
+        </a>
+      </div>`;
+  }
 }

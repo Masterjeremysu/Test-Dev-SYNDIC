@@ -553,7 +553,9 @@ async function renderDashboard() {
       case 'votes':
         title='🗳️ Votes'; link='Voter'; linkFn="nav('votes')"; body=_widgetVotes(); break;
       case 'documents':
-        title='📁 Documents'; link='Voir tous'; linkFn="nav('documents')"; body=_widgetDocuments(); break;
+        title='📁 Documents'; link='Voir tous'; linkFn="nav('documents')"; 
+        body='<div id="dash-docs-list"><div class="d5-empty">Chargement…</div></div>'; 
+        break;
       case 'install':
         title='📱 Installer l\'app';
         body='<div class="d5w-body" style="text-align:center;padding:20px;">'
@@ -622,20 +624,7 @@ function _widgetVotes() {
   }).join('');
 }
 
-function _widgetDocuments() {
-  const docs=(typeof _docsCache!=='undefined')?_docsCache:[];
-  if(!docs.length) return '<div class="d5-empty">Aucun document</div>';
-  return docs.slice(0,4).map(doc=>{
-    const cat=(typeof DOC_CATS!=='undefined'&&DOC_CATS[doc.categorie])?DOC_CATS[doc.categorie]:{ico:'📄'};
-    const isNew=(typeof _docsVus!=='undefined')?!_docsVus.has(doc.id):false;
-    return '<div class="d5-row" onclick="nav(\'documents\')">'
-      +'<div class="d5-row-ico">'+cat.ico+'</div>'
-      +'<div class="d5-row-body"><div class="d5-row-title">'+_e(doc.titre)+'</div>'
-      +'<div class="d5-row-sub">'+fmtD(doc.created_at)+'</div></div>'
-      +(isNew?'<span class="d5-pill d5-pill-b">Nouveau</span>':'')
-      +'</div>';
-  }).join('');
-}
+
 
 /* ═══════════════════════════════════════════════════════════════
    CONTRÔLES WIDGETS — taille, visible/masqué, reset
@@ -799,7 +788,7 @@ function refreshDashFocus() {
    WIDGETS ASYNCHRONES
 ═══════════════════════════════════════════════════════════════ */
 async function loadDashboardWidgets() {
-  // Événements
+  // ── Événements ──
   const {data:evts}=await sb.from('evenements').select('*').gte('date_debut',new Date().toISOString()).order('date_debut').limit(4);
   const evtEl=$('dash-events-list');
   if(evtEl){
@@ -822,25 +811,61 @@ async function loadDashboardWidgets() {
       .forEach(e=>pushNotif('📅 Rappel',e.titre+' — demain à '+new Date(e.date_debut).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),'statut_change',null));
   }
 
-  // Annonces
-  const {data:annsRaw}=await sb.from('annonces').select('*').order('epingle',{ascending:false}).order('created_at',{ascending:false}).limit(12);
-  const anns=(annsRaw||[]).filter(a=>annonceReaderCanSee(a)).slice(0,3);
-  const annEl=$('dash-annonces-list');
-  if(annEl){
-    if(!anns.length){
-      annEl.innerHTML='<div class="d5-empty">Aucune annonce</div>';
+  // ── Annonces (Filtre anti-archives agressif) ──
+  const {data:annsRaw} = await sb.from('annonces').select('*').order('epingle',{ascending:false}).order('created_at',{ascending:false}).limit(20);
+  const anns = (annsRaw || [])
+    .filter(a => typeof annonceReaderCanSee === 'function' ? annonceReaderCanSee(a) : true)
+    .filter(a => {
+       if (a.archive === true || a.is_archived === true) return false;
+       const st = String(a.statut || a.status || a.etat || '').toLowerCase();
+       if (st.includes('archiv')) return false;
+       return true;
+    })
+    .slice(0, 3);
+
+  const annEl = $('dash-annonces-list');
+  if (annEl) {
+    if (!anns.length) {
+      annEl.innerHTML = '<div class="d5-empty">Aucune annonce</div>';
     } else {
-      annEl.className='';
-      const icos={urgent:'🚨',important:'⚠️',info:'📢'};
-      annEl.innerHTML=anns.map(a=>
+      annEl.className = '';
+      const icos = { urgent: '🚨', important: '⚠️', info: '📢' };
+      annEl.innerHTML = anns.map(a =>
         '<div class="d5-row" onclick="nav(\'annonces\')">'
-        +'<div class="d5-row-ico">'+(a.epingle?'📌':(icos[a.type]||'📢'))+'</div>'
-        +'<div class="d5-row-body"><div class="d5-row-title">'+_e(a.titre)+'</div>'
-        +(a.contenu?'<div class="d5-row-sub">'+_e(a.contenu.substring(0,60))+(a.contenu.length>60?'…':'')+'</div>':'')
-        +'</div>'+(a.epingle?'<span class="d5-pill d5-pill-n">\u00c9pingl\u00e9</span>':'')+'</div>'
+        +'<div class="d5-row-ico">' + (a.epingle ? '📌' : (icos[a.type] || '📢')) + '</div>'
+        +'<div class="d5-row-body"><div class="d5-row-title">' + _e(a.titre) + '</div>'
+        +(a.contenu ? '<div class="d5-row-sub">' + _e(a.contenu.substring(0,60)) + (a.contenu.length>60?'…':'') + '</div>' : '')
+        +'</div>' + (a.epingle ? '<span class="d5-pill d5-pill-n">Épinglé</span>' : '') + '</div>'
       ).join('');
     }
   }
+
+  // ── Documents (Chargement asynchrone direct et autonome) ──
+  const docEl = $('dash-docs-list');
+  if (docEl) {
+     try {
+       const { data: docsRaw } = await sb.from('documents').select('*').order('created_at', {ascending: false}).limit(4);
+       const docs = docsRaw || [];
+       if (!docs.length) {
+           docEl.innerHTML = '<div class="d5-empty">Aucun document</div>';
+       } else {
+           docEl.innerHTML = docs.map(doc => {
+              const cat = (typeof DOC_CATS !== 'undefined' && DOC_CATS[doc.categorie]) ? DOC_CATS[doc.categorie] : {ico:'📄'};
+              const isNew = (typeof _docsVus !== 'undefined') ? !_docsVus.has(doc.id) : false;
+              const dateStr = typeof fmtD === 'function' ? fmtD(doc.created_at) : new Date(doc.created_at).toLocaleDateString('fr-FR');
+              return '<div class="d5-row" onclick="nav(\'documents\')">'
+                +'<div class="d5-row-ico">'+cat.ico+'</div>'
+                +'<div class="d5-row-body"><div class="d5-row-title">'+_e(doc.titre)+'</div>'
+                +'<div class="d5-row-sub">'+dateStr+'</div></div>'
+                +(isNew ? '<span class="d5-pill d5-pill-b">Nouveau</span>' : '')
+                +'</div>';
+           }).join('');
+       }
+     } catch(e) {
+       docEl.innerHTML = '<div class="d5-empty">Erreur de chargement</div>';
+     }
+  }
+
   renderDashChart();
 }
 

@@ -26,14 +26,11 @@
   <link rel="manifest" href="manifest.json">
   <link rel="canonical" href="./">
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
 
@@ -48,11 +45,9 @@
   </div>
 </noscript>
 
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-split">
 
-    <!-- HERO GAUCHE -->
     <div class="login-hero">
       <div class="login-hero-badge">
         <span>●</span> Résidence le Floréal
@@ -79,11 +74,13 @@
       </div>
     </div>
 
-    <!-- FORMULAIRE DROIT -->
     <div class="login-box">
-      <div class="login-box-header">
-        <div class="login-brand">CoproSync</div>
-        <div class="login-tag">Résidence le Floréal · Sassenage</div>
+      <div class="login-box-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin-bottom: 24px;">
+        <img src="icon-192.png" alt="Logo CoproSync" style="width: 64px; height: 64px; object-fit: contain; border-radius: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">
+        <div>
+          <div class="login-brand" style="margin-bottom: 4px;">CoproSync</div>
+          <div class="login-tag">Résidence le Floréal · Sassenage</div>
+        </div>
       </div>
       <div id="auth-form">
         <div class="fg">
@@ -95,7 +92,6 @@
           <input type="password" id="auth-pass" class="input" placeholder="••••••••" autocomplete="new-password" data-lpignore="true" data-form-type="other">
         </div>
 
-        <!-- Champs supplémentaires visibles uniquement en mode inscription -->
         <div id="auth-extra-fields" style="display:none;">
           <div style="display:flex;gap:8px;margin-bottom:0;">
             <div class="fg" style="flex:1;">
@@ -149,13 +145,12 @@
   </div>
 </div>
 
-<!-- APP -->
 <div id="app" style="display:none">
   <div id="so" onclick="closeSidebar()"></div>
   <nav id="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="white" stroke="none"/></svg>
+      <div class="brand-icon" style="background: transparent; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        <img src="icon-192.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px;">
       </div>
       <div>
         <div class="brand-name">CoproSync</div>
@@ -199,6 +194,16 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18a2 2 0 012-2.18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
       Contacts & Urgences
     </a>
+    <a class="nav-item" onclick="nav('registre')">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <polyline points="10 9 9 9 8 9"></polyline>
+  </svg>
+  Registre
+</a>
     <a class="nav-item" data-page="faq" onclick="nav('faq')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M9.09 9a3 3 0 015.82 1c0 2-3 2-3 4"/>
@@ -268,25 +273,25 @@
 
   <div id="main" tabindex="-1">
     <div id="topbar">
-      <button id="menu-btn" onclick="toggleSidebar()">
+      <button id="menu-btn" onclick="toggleSidebar()" aria-label="Ouvrir le menu principal">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="topbar-title" id="topbar-title">Vue d'ensemble</span>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button class="notif-btn" onclick="openSearch()" title="Rechercher (Ctrl+K)">
+        <button class="notif-btn" onclick="openSearch()" title="Rechercher (Ctrl+K)" aria-label="Rechercher dans l'application">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
-        <button class="notif-btn" id="theme-btn" onclick="toggleTheme()" title="Mode sombre">
+        <button class="notif-btn" id="theme-btn" onclick="toggleTheme()" title="Mode sombre" aria-label="Activer ou désactiver le mode sombre">
           <span id="theme-ico">🌙</span>
         </button>
         <div style="position:relative;" id="notif-wrap">
-          <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()">
+          <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()" aria-label="Ouvrir les notifications">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
             <span class="notif-dot" id="notif-dot"></span>
           </button>
           <div class="notif-panel" id="notif-panel" style="display:none;"></div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="openNewTicket()">
+        <button class="btn btn-primary btn-sm" onclick="openNewTicket()" aria-label="Créer un nouveau signalement">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Signaler
         </button>
@@ -296,7 +301,6 @@
   </div>
 </div>
 
-<!-- BOTTOM NAV MOBILE -->
 <nav id="bottom-nav">
   <button class="bn-item active" id="bn-dashboard" onclick="nav('dashboard')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -324,7 +328,6 @@
   </button>
 </nav>
 
-<!-- MODAL TICKET -->
 <div class="overlay" id="m-ticket">
   <div class="modal">
     <div class="mh">
@@ -333,7 +336,6 @@
     </div>
     <div class="mb">
 
-      <!-- URGENCE -->
       <div class="fg">
         <label class="label">Urgence *</label>
         <div class="urgency-grid" id="urgency-grid">
@@ -344,7 +346,6 @@
         <div id="urgence-hint" style="font-size:11px;color:var(--text-3);margin-top:4px;display:none;">Le niveau Critique est réservé aux gestionnaires de la résidence.</div>
       </div>
 
-      <!-- CATÉGORIE — déclenche les options de zone dynamiques -->
       <div class="fg">
         <label class="label">Catégorie *</label>
         <div id="cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">
@@ -360,7 +361,6 @@
         </div>
       </div>
 
-      <!-- LOCALISATION contextuelle -->
       <div class="fg" id="loc-bloc">
         <label class="label">Localisation *</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="loc-selects">
@@ -394,19 +394,16 @@
         <input type="text" id="t-zone-free" class="input" placeholder="Précision libre (optionnel)" style="margin-top:8px;">
       </div>
 
-      <!-- TITRE -->
       <div class="fg">
         <label class="label">Titre *</label>
         <input type="text" id="t-titre" class="input" placeholder="Résumez le problème en quelques mots...">
       </div>
 
-      <!-- DESCRIPTION -->
       <div class="fg">
         <label class="label">Description</label>
         <textarea id="t-desc" class="textarea" placeholder="Depuis quand ? Risques ? Observations utiles pour l'intervention..."></textarea>
       </div>
 
-      <!-- PHOTO -->
       <div class="fg">
         <label class="label">Photos <span style="color:var(--text-3);font-weight:400;">(optionnel · max 5)</span></label>
         <div class="photo-zone">
@@ -436,7 +433,6 @@
   </div>
 </div>
 
-<!-- MODAL DETAIL TICKET -->
 <div class="overlay" id="m-detail">
   <div class="modal modal-wide">
     <div class="mh">
@@ -448,9 +444,6 @@
   </div>
 </div>
 
-<!-- MODAL CONTRAT — avec sélecteur de document bucket -->
-<!-- Remplace l'ancien bloc <div class="overlay" id="m-contrat"> dans index.html -->
-
 <div class="overlay" id="m-contrat">
   <div class="modal" style="max-width:580px;">
     <div class="mh">
@@ -459,7 +452,6 @@
     </div>
     <div class="mb">
 
-      <!-- Fournisseur + Type -->
       <div class="fg-row">
         <div class="fg" style="margin:0;">
           <label class="label">Fournisseur *</label>
@@ -487,7 +479,6 @@
         </div>
       </div>
 
-      <!-- Dates + Alerte -->
       <div class="fg-row" style="margin-top:14px;">
         <div class="fg" style="margin:0;">
           <label class="label">Date de début</label>
@@ -503,7 +494,6 @@
         </div>
       </div>
 
-      <!-- Montant + Actif -->
       <div class="fg-row" style="margin-top:14px;align-items:flex-end;">
         <div class="fg" style="margin:0;">
           <label class="label">Montant annuel (€)</label>
@@ -516,7 +506,6 @@
         </div>
       </div>
 
-      <!-- Contact -->
       <fieldset style="border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:14px;margin-top:16px;">
         <legend style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
                        color:var(--text-3,#94a3b8);padding:0 6px;">Contact fournisseur</legend>
@@ -536,7 +525,6 @@
         </div>
       </fieldset>
 
-      <!-- Document PDF — sélecteur bucket -->
       <div class="fg" style="margin-top:16px;">
         <label class="label">Document lié <span style="color:var(--text-3);font-weight:400;">(optionnel)</span></label>
         <div class="doc-url-wrap">
@@ -545,7 +533,6 @@
             📁 Parcourir
           </button>
         </div>
-        <!-- Preview du fichier sélectionné -->
         <div id="doc-url-preview" style="display:none;margin-top:6px;align-items:center;gap:8px;font-size:12px;color:var(--text-2);">
           <span>📄</span>
           <a id="doc-url-preview-link" href="#" target="_blank" rel="noopener"></a>
@@ -555,7 +542,6 @@
         </div>
       </div>
 
-      <!-- Notes -->
       <div class="fg" style="margin-top:14px;">
         <label class="label">Notes</label>
         <textarea id="c-notes" class="textarea" rows="3"
@@ -570,7 +556,6 @@
   </div>
 </div>
 
-<!-- MODAL CLÉ -->
 <div class="overlay" id="m-cle">
   <div class="modal">
     <div class="mh"><span class="mh-title">Gérer une clé</span><button class="mclose" onclick="closeModal('m-cle')">×</button></div>
@@ -587,7 +572,6 @@
   </div>
 </div>
 
-<!-- MODAL INVITE USER -->
 <div class="overlay" id="m-invite">
   <div class="modal">
     <div class="mh"><span class="mh-title">Inviter un utilisateur</span><button class="mclose" onclick="closeModal('m-invite')">×</button></div>
@@ -657,6 +641,8 @@
   <script src="assets/js/features/theme/theme.js" defer></script>
   <script src="assets/js/features/search/search.js" defer></script>
   <script src="assets/js/features/contacts/contacts.js" defer></script>
+  <script src="assets/js/features/registre/registre-data.js" defer></script>
+  <script src="assets/js/features/registre/registre.js" defer></script>
   <script src="assets/js/features/faq/faq.js" defer></script>
   <script src="assets/js/features/permissions/permissions-page.js" defer></script>
   <script src="assets/js/features/onboarding/onboarding.js" defer></script>

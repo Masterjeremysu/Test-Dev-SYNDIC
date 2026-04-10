@@ -1,9 +1,6 @@
 // ════════════════════════════════════════════════════════════════
 //  COPROSYNC — Moteur de permissions dynamiques
 //  assets/js/core/permissions.js
-//
-//  DOIT être chargé AVANT helpers.js dans index.html.
-//  Expose l'objet global window.Permissions.
 // ════════════════════════════════════════════════════════════════
 
 window.Permissions = (function () {
@@ -31,6 +28,8 @@ window.Permissions = (function () {
     cles:        ['cles'],
     journal:     ['journal'],
     users:       ['users'],
+    admin:       ['admin'],
+    registre:    ['registre'],
     permissions: ['permissions'],
   };
 
@@ -39,13 +38,15 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   async function load() {
-  const role = profile?.role;   // pas window.profile
-  if (!role) return;
-  if (role === 'administrateur') {
-    _locked = false;
-    _loaded = true;
-    return;
-  }
+    const role = profile?.role; 
+    if (!role) return;
+    
+    // L'administrateur a un "Pass Partout" permanent
+    if (role === 'administrateur') {
+      _locked = false;
+      _loaded = true;
+      return;
+    }
 
     try {
       // 1. Vérification verrou de rôle
@@ -105,29 +106,34 @@ window.Permissions = (function () {
   // ────────────────────────────────────────────────────────────
 
   function getAccessiblePages() {
-  if (profile?.role === 'administrateur') {
-    return [
-      'dashboard','tickets','map','messages',
-      'annonces','agenda','contacts','faq','documents','votes',
-      'rapport','contrats','cles','journal','users','permissions',
-      'profile','notifications'
-    ];
+    const role = profile?.role;
+
+    // Hardcoded master-list pour l'admin
+    if (role === 'administrateur') {
+      return [
+        'dashboard','tickets','map','messages',
+        'annonces','agenda','contacts','faq','documents','votes',
+        'rapport','contrats','cles','journal','users','permissions',
+        'profile','notifications','admin', 'registre' // <--- AJOUTÉ ICI AUSSI
+      ];
+    }
+
+    if (_locked) return ['profile', 'notifications'];
+
+    const pages = new Set(['profile', 'notifications']);
+    Object.entries(MODULE_TO_PAGES).forEach(([mod, modPages]) => {
+      if (has(mod + '.view')) modPages.forEach(p => pages.add(p));
+    });
+    return [...pages];
   }
-  if (_locked) return ['profile', 'notifications'];
-  const pages = new Set(['profile', 'notifications']);
-  Object.entries(MODULE_TO_PAGES).forEach(([mod, modPages]) => {
-    if (has(mod + '.view')) modPages.forEach(p => pages.add(p));
-  });
-  return [...pages];
-}
 
   function getDefaultPage() {
-  if (profile?.role === 'administrateur') return 'dashboard';
-  if (has('dashboard.view')) return 'dashboard';
-  if (has('tickets.view'))   return 'tickets';
-  if (has('rapport.view'))   return 'rapport';
-  return 'profile';
-}
+    if (profile?.role === 'administrateur') return 'dashboard';
+    if (has('dashboard.view')) return 'dashboard';
+    if (has('tickets.view'))   return 'tickets';
+    if (has('rapport.view'))   return 'rapport';
+    return 'profile';
+  }
 
   // ────────────────────────────────────────────────────────────
   //  REALTIME
@@ -178,7 +184,7 @@ window.Permissions = (function () {
   }
 
   // ────────────────────────────────────────────────────────────
-  //  API ADMIN
+  //  API ADMIN (Utilisée par admin.js)
   // ────────────────────────────────────────────────────────────
 
   async function setPermission(role, permId, granted) {
@@ -188,6 +194,8 @@ window.Permissions = (function () {
       { onConflict: 'role,permission' }
     );
     if (error) { if (typeof window.toast === 'function') window.toast('Erreur : ' + error.message, 'err'); return false; }
+    
+    // Log de sécurité
     await sb.from('permission_changes_log').insert({
       admin_id: user.id,
       admin_nom: typeof window.displayNameFromProfile === 'function' ? window.displayNameFromProfile(profile, user?.email) : 'Admin',
@@ -203,6 +211,7 @@ window.Permissions = (function () {
       { onConflict: 'role' }
     );
     if (error) return false;
+    
     await sb.from('permission_changes_log').insert({
       admin_id: user.id,
       admin_nom: typeof window.displayNameFromProfile === 'function' ? window.displayNameFromProfile(profile, user?.email) : 'Admin',

@@ -5,7 +5,7 @@
 
 const SUPA_URL = 'https://sifjbqtnrfydxcemhsnz.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZmpicXRucmZ5ZHhjZW1oc256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzIyMjYsImV4cCI6MjA4ODkwODIyNn0.aRZUunTn1W5hLNHRXDSWjp7hKcBtxQlFKSM05MTQyVE';
-
+window.COPRO_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
 // ── RÉSIDENCE LE FLORÉAL — Configuration ──
 const COPRO = {
   nom: 'Résidence le Floréal',

@@ -5,47 +5,54 @@
 
 async function loadTickets() {
   const { data, error } = await sb.from('v_tickets').select('*').order('created_at', { ascending: false });
-  if (!error && data) cache.tickets = data;
+  if (error) { err('loadTickets:', error.message); return null; }
+  if (data) cache.tickets = data;
   return data;
 }
 
 async function loadContrats() {
   if (!Permissions.has('contrats.view')) return;
   const { data, error } = await sb.from('contrats').select('*').order('date_echeance', { ascending: true });
-  if (error) { console.warn('loadContrats:', error.message); return; }
+  if (error) { err('loadContrats:', error.message); return; }
   if (data) cache.contrats = data;
 }
 
 async function loadCles() {
   if (!Permissions.has('cles.view')) return;
-  const { data } = await sb.from('cles').select('*').order('nom');
+  const { data, error } = await sb.from('cles').select('*').order('nom');
+  if (error) { err('loadCles:', error.message); return; }
   if (data) cache.cles = data;
 }
 
 async function loadJournal() {
   if (!Permissions.has('journal.view')) return;
-  const { data } = await sb.from('journal').select('*,profiles(nom,prenom)').order('created_at', { ascending: false }).limit(200);
+  const { data, error } = await sb.from('journal').select('*,profiles(nom,prenom)').order('created_at', { ascending: false }).limit(200);
+  if (error) { err('loadJournal:', error.message); return; }
   if (data) cache.journal = data;
 }
 
 async function loadAnnonceCache() {
-  const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(50);
+  const { data, error } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(50);
+  if (error) { err('loadAnnonceCache:', error.message); return; }
   if (data) cache.annonces = data;
 }
 
 async function loadEvenementsCache() {
-  const { data } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+  const { data, error } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+  if (error) { err('loadEvenementsCache:', error.message); return; }
   if (data) cache.evenements = data;
 }
 
 async function loadContactsCache() {
   if (!Permissions.has('contacts.view')) return;
-  const { data } = await sb.from('contacts').select('*').eq('actif', true).order('ordre');
+  const { data, error } = await sb.from('contacts').select('*').eq('actif', true).order('ordre');
+  if (error) { err('loadContactsCache:', error.message); return; }
   if (data) _contactsCache = data;
 }
 
 async function loadStats() {
-  const { data } = await sb.from('v_stats').select('*').single();
+  const { data, error } = await sb.from('v_stats').select('*').single();
+  if (error) { err('loadStats:', error.message); return null; }
   return data;
 }
 

@@ -10,6 +10,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     $('login-screen').style.display = 'flex';
     $('app').style.display = 'none';
     user = null; profile = null;
+    window._currentCoproId = null; // Nettoyage
     return;
   }
   $('auth-btn').disabled = false;
@@ -77,8 +78,6 @@ async function startApp() {
     $('app').style.display = 'flex';
 
     // ── Chargement des permissions AVANT initUI ──
-    // C'est l'ordre critique : Permissions doit être prêt avant
-    // qu'on calcule quels items de menu afficher.
     await Permissions.load();
 
     initUI();
@@ -95,10 +94,21 @@ async function startApp() {
     initPullToRefresh();
     setTimeout(checkOnboarding, 1500);
 
-    setInterval(async () => {
-      const { data } = await sb.from('profiles').select('actif').eq('id', user.id).single();
-      if (data?.actif === false) { await sb.auth.signOut(); location.reload(); }
-    }, 2 * 60 * 1000);
+    // ── Patch Dev Expert : Remplacement du Polling par du Realtime ──
+    sb.channel('profile-status')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+        async (payload) => {
+          if (payload.new && payload.new.actif === false) {
+            // Déconnexion propre sans forcer un reload brutal qui casse l'UX
+            await sb.auth.signOut();
+            window.location.href = '/'; 
+          }
+        }
+      )
+      .subscribe();
+
   } catch (e) {
     err('[startApp] ERREUR:', e);
     showAuthError('Erreur au démarrage de l\'application. Réessayez dans quelques secondes.');
@@ -117,6 +127,10 @@ async function loadProfile() {
     const { data } = await Promise.race([query, timeout]);
     if (data) {
       profile = data;
+      // 🔥 FIX CRITIQUE : Lier la variable globale au profil pour le Registre
+      if (profile.copro_id) {
+        window._currentCoproId = profile.copro_id;
+      }
     } else {
       const meta = user.user_metadata || {};
       profile = { id: user.id, email: user.email, nom: meta.nom || null, prenom: meta.prenom || null, role: meta.role || 'copropriétaire', tour: meta.tour || null, lot: meta.lot || null };
@@ -124,7 +138,14 @@ async function loadProfile() {
     dbg('[loadProfile] role =', profile.role);
   } catch (e) {
     err('[loadProfile] CRASH/TIMEOUT:', e.message);
-    try { const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle(); if (data) { profile = data; return; } } catch {}
+    try { 
+      const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle(); 
+      if (data) { 
+        profile = data; 
+        if (profile.copro_id) window._currentCoproId = profile.copro_id; // Ajout sécurité ici aussi
+        return; 
+      } 
+    } catch {}
     const meta = user.user_metadata || {};
     profile = { id: user.id, email: user.email, nom: meta.nom || null, prenom: meta.prenom || null, role: meta.role || 'copropriétaire' };
   }
@@ -178,9 +199,11 @@ function initUI() {
 
 async function loadAll() {
   try {
+    // 1. Chargement critique initial
     await loadTickets();
     if (currentPage === 'dashboard') renderDashboard();
 
+    // 2. Tâches de fond
     const tasks = [];
     if (Permissions.has('contrats.view'))  tasks.push(loadContrats());
     if (Permissions.has('cles.view'))      tasks.push(loadCles());
@@ -189,10 +212,31 @@ async function loadAll() {
     tasks.push(loadEvenementsCache());
     if (Permissions.has('contacts.view')) tasks.push(loadContactsCache());
 
+    // 🔥 RESTAURATION ANTI-RÉGRESSION : On appelle la VRAIE fonction des votes
+    tasks.push((async () => {
+      try {
+        if (typeof loadVotes === 'function') {
+          await loadVotes();
+        }
+      } catch(e) {
+        console.warn('[loadAll] Erreur chargement votes:', e);
+      }
+    })());
+
+    // On attend que TOUT soit chargé
     await Promise.all(tasks);
+    
+    // 3. Mise à jour de l'UI globale
     updateBadges();
     checkNotifications();
-    if (currentPage === 'dashboard') renderDashboard();
+    
+    // 4. On rafraîchit le Dashboard (les Votes apparaîtront, les Annonces seront filtrées, et les Docs se chargeront seuls)
+    if (currentPage === 'dashboard') {
+        renderDashboard();
+        if (typeof loadDashboardWidgets === 'function') {
+            loadDashboardWidgets();
+        }
+    }
   } catch (e) {
     err('loadAll error:', e);
   }

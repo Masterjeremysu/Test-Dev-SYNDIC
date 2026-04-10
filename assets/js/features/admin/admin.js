@@ -1,117 +1,29 @@
+// ════════════════════════════════════════════════════════════════
+//  ADMINISTRATION : ACCÈS & VISIBILITÉ (SaaS Premium UI)
+//  assets/js/features/admin/admin.js
+// ════════════════════════════════════════════════════════════════
+
 function adminModuleCatalog() {
   return [
-    {
-      key: 'dashboard',
-      label: 'Vue d’ensemble',
-      description: 'Accès au tableau de bord principal et à ses indicateurs.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'tickets',
-      label: 'Signalements',
-      description: 'Création, suivi et traitement des incidents.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'map',
-      label: 'Carte',
-      description: 'Visualisation cartographique des signalements.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'messages',
-      label: 'Messages',
-      description: 'Messagerie interne et conversations de résidence.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'annonces',
-      label: 'Annonces',
-      description: 'Diffusion des annonces, informations et communications.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'agenda',
-      label: 'Agenda',
-      description: 'Événements, rendez-vous et échéances communes.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'contacts',
-      label: 'Contacts & urgences',
-      description: 'Répertoire utile et contacts prioritaires.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'documents',
-      label: 'Documents',
-      description: 'Accès aux documents partagés de la résidence.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'votes',
-      label: 'Votes & sondages',
-      description: 'Participation aux consultations et scrutins.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'faq',
-      label: 'FAQ',
-      description: 'Base d’aide et réponses aux questions fréquentes.',
-      defaultRoles: ['administrateur', 'membre_cs', 'copropriétaire'],
-      adminOnly: false,
-    },
-    {
-      key: 'contrats',
-      label: 'Contrats',
-      description: 'Pilotage des contrats, échéances et fournisseurs.',
-      defaultRoles: ['administrateur', 'membre_cs'],
-      adminOnly: false,
-    },
-    {
-      key: 'cles',
-      label: 'Clés',
-      description: 'Suivi des clés, prêts et historiques associés.',
-      defaultRoles: ['administrateur', 'membre_cs'],
-      adminOnly: false,
-    },
-    {
-      key: 'journal',
-      label: 'Journal',
-      description: 'Audit des actions, traçabilité et supervision.',
-      defaultRoles: ['administrateur', 'membre_cs'],
-      adminOnly: false,
-    },
-    {
-      key: 'users',
-      label: 'Utilisateurs',
-      description: 'Administration classique des profils et comptes.',
-      defaultRoles: ['administrateur'],
-      adminOnly: true,
-    },
-    {
-      key: 'rapport',
-      label: 'Rapport syndic',
-      description: 'Vue de synthèse dédiée au suivi avec le syndic.',
-      defaultRoles: ['administrateur', 'membre_cs', 'syndic'],
-      adminOnly: false,
-    },
-    {
-      key: 'admin',
-      label: 'Admin accès',
-      description: 'Gouvernance des rôles, accès et visibilité globale.',
-      defaultRoles: ['administrateur'],
-      adminOnly: true,
-    }
+    { key: 'dashboard', label: 'Vue d’ensemble', description: 'Accès au tableau de bord principal.', adminOnly: false },
+    { key: 'tickets', label: 'Signalements', description: 'Création, suivi et traitement des incidents.', adminOnly: false },
+    { key: 'map', label: 'Carte', description: 'Visualisation cartographique des signalements.', adminOnly: false },
+    { key: 'messages', label: 'Messages', description: 'Messagerie interne de résidence.', adminOnly: false },
+    { key: 'annonces', label: 'Annonces', description: 'Diffusion des annonces.', adminOnly: false },
+    { key: 'agenda', label: 'Agenda', description: 'Événements et rendez-vous.', adminOnly: false },
+    { key: 'contacts', label: 'Contacts', description: 'Répertoire utile et urgences.', adminOnly: false },
+    { key: 'documents', label: 'Documents', description: 'Accès aux documents partagés.', adminOnly: false },
+    { key: 'votes', label: 'Votes', description: 'Consultations et scrutins.', adminOnly: false },
+    { key: 'faq', label: 'FAQ', description: 'Base d’aide.', adminOnly: false },
+    { key: 'contrats', label: 'Contrats', description: 'Pilotage des fournisseurs.', adminOnly: false },
+    { key: 'cles', label: 'Clés', description: 'Suivi des clés.', adminOnly: false },
+    { key: 'journal', label: 'Journal', description: 'Audit des actions.', adminOnly: false },
+    { key: 'users', label: 'Utilisateurs', description: 'Profils et comptes.', adminOnly: true },
+    { key: 'rapport', label: 'Rapport syndic', description: 'Suivi avec le syndic.', adminOnly: false },
+    { key: 'journal', label: 'Journal', description: 'Audit des actions.', adminOnly: false },
+    { key: 'registre', label: 'Registre', description: 'Suivi des interventions et prestataires.', adminOnly: false }, 
+    { key: 'users', label: 'Utilisateurs', description: 'Profils et comptes.', adminOnly: true },
+    { key: 'admin', label: 'Sécurité & Accès', description: 'Gouvernance globale.', adminOnly: true }
   ];
 }
 
@@ -127,52 +39,28 @@ function adminRoleLabels() {
 function getAdminRoleTemplate(role) {
   const byRole = {
     administrateur: {
-      role: 'administrateur',
-      label: 'Administrateur',
-      level: 'Contrôle total',
+      role: 'administrateur', label: 'Administrateur', level: 'Contrôle total',
       modules: adminModuleCatalog().map(m => m.key),
-      capabilities: [
-        'Modifier les rôles',
-        'Suspendre / réactiver les comptes',
-        'Gérer les accès sensibles',
-        'Superviser le journal'
-      ],
-      badgeColor: 'var(--violet)'
+      capabilities: ['Modifier les rôles', 'Gérer les comptes', 'Superviser le journal'],
+      badgeColor: 'var(--purple, #a855f7)', bgLight: 'var(--purple-light, #f3e8ff)'
     },
     syndic: {
-      role: 'syndic',
-      label: 'Syndic',
-      level: 'Accès externe restreint',
+      role: 'syndic', label: 'Syndic', level: 'Accès restreint',
       modules: ['rapport'],
-      capabilities: [
-        'Consulter le rapport syndic',
-        'Suivre les synthèses partagées'
-      ],
-      badgeColor: 'var(--accent)'
+      capabilities: ['Consulter les rapports', 'Voir les signalements transmis'],
+      badgeColor: 'var(--orange, #f97316)', bgLight: 'var(--orange-light, #ffedd5)'
     },
     membre_cs: {
-      role: 'membre_cs',
-      label: 'Conseil Syndical',
-      level: 'Pilotage opérationnel',
-      modules: ['dashboard', 'tickets', 'map', 'messages', 'annonces', 'agenda', 'contacts', 'documents', 'votes', 'contrats', 'cles', 'journal', 'rapport'],
-      capabilities: [
-        'Suivre les incidents',
-        'Accéder aux espaces de gestion',
-        'Piloter contrats et journal'
-      ],
-      badgeColor: 'var(--amber)'
+      role: 'membre_cs', label: 'Conseil Syndical', level: 'Pilotage opérationnel',
+      modules: ['dashboard', 'tickets', 'map', 'messages', 'annonces', 'agenda', 'contacts', 'documents', 'votes', 'contrats', 'cles', 'journal','registre', 'rapport'],
+      capabilities: ['Gérer les incidents', 'Piloter les contrats', 'Diffuser des annonces'],
+      badgeColor: 'var(--blue, #3b82f6)', bgLight: 'var(--blue-light, #eff6ff)'
     },
     'copropriétaire': {
-      role: 'copropriétaire',
-      label: 'Copropriétaire',
-      level: 'Usage résident',
+      role: 'copropriétaire', label: 'Résident', level: 'Usage standard',
       modules: ['dashboard', 'tickets', 'map', 'messages', 'annonces', 'agenda', 'contacts', 'documents', 'votes', 'faq', 'profile'],
-      capabilities: [
-        'Déclarer un signalement',
-        'Consulter la vie de la résidence',
-        'Participer aux échanges et votes'
-      ],
-      badgeColor: 'var(--green)'
+      capabilities: ['Créer un signalement', 'Discuter avec les voisins', 'Participer aux votes'],
+      badgeColor: 'var(--green, #10b981)', bgLight: 'var(--green-light, #d1fae5)'
     }
   };
   return byRole[role] || byRole['copropriétaire'];
@@ -188,318 +76,290 @@ function getAdminUserMatrix(profileRow) {
   return {
     role: profileRow?.role || 'copropriétaire',
     roleLabel: roleLabels[profileRow?.role] || profileRow?.role || '—',
-    template,
-    visibleModules,
-    hiddenModules,
-    canLogin: profileRow?.actif !== false,
-    isRestricted: profileRow?.actif === false || profileRow?.role === 'syndic',
+    template, visibleModules, hiddenModules,
+    canLogin: profileRow?.actif !== false
   };
 }
 
-function adminStatsFromUsers(users, journalRows) {
+function adminStatsFromUsers(users) {
   const list = users || [];
-  const total = list.length;
-  const active = list.filter(u => u.actif !== false).length;
-  const suspended = total - active;
-  const admins = list.filter(u => u.role === 'administrateur').length;
-  const cs = list.filter(u => u.role === 'membre_cs').length;
-  const syndics = list.filter(u => u.role === 'syndic').length;
-  const residents = list.filter(u => u.role === 'copropriétaire').length;
   return {
-    total,
-    active,
-    suspended,
-    admins,
-    cs,
-    syndics,
-    residents,
-    recentLogs: (journalRows || []).length
+    total: list.length,
+    active: list.filter(u => u.actif !== false).length,
+    suspended: list.filter(u => u.actif === false).length,
+    admins: list.filter(u => u.role === 'administrateur').length,
+    cs: list.filter(u => u.role === 'membre_cs').length,
+    syndics: list.filter(u => u.role === 'syndic').length,
+    residents: list.filter(u => u.role === 'copropriétaire').length
   };
 }
 
-function adminAccessBadge(matrix) {
-  if (!matrix.canLogin) return '<span style="font-size:10px;padding:4px 8px;border-radius:999px;background:var(--red-light);color:var(--red);border:1px solid var(--red-border);font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Suspendu</span>';
-  if (matrix.role === 'administrateur') return '<span style="font-size:10px;padding:4px 8px;border-radius:999px;background:rgba(124,58,237,.12);color:var(--violet);border:1px solid rgba(124,58,237,.25);font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Accès total</span>';
-  if (matrix.role === 'membre_cs') return '<span style="font-size:10px;padding:4px 8px;border-radius:999px;background:rgba(234,88,12,.12);color:var(--amber);border:1px solid rgba(234,88,12,.25);font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Gestionnaire</span>';
-  if (matrix.role === 'syndic') return '<span style="font-size:10px;padding:4px 8px;border-radius:999px;background:rgba(37,99,235,.12);color:var(--accent);border:1px solid rgba(37,99,235,.25);font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Rapport seul</span>';
-  return '<span style="font-size:10px;padding:4px 8px;border-radius:999px;background:var(--green-light);color:var(--green);border:1px solid var(--green-border);font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Accès résident</span>';
-}
+(function injectAdminCSS() {
+  if (document.getElementById('saas-admin-css')) return;
+  const s = document.createElement('style');
+  s.id = 'saas-admin-css';
+  s.textContent = `
+    .adm-container { padding: 32px 40px; max-width: 1400px; margin: 0 auto; animation: fade-in 0.3s ease; }
+    .adm-title { font-family: var(--font-head); font-size: 32px; font-weight: 900; letter-spacing: -1px; color: var(--text-1); margin: 0 0 8px 0; }
+    .adm-sub { font-size: 14px; color: var(--text-3); font-weight: 500; margin-bottom: 32px; max-width: 700px; line-height: 1.5; }
+    
+    .adm-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .adm-stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .adm-stat-lbl { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); margin-bottom: 8px; }
+    .adm-stat-val { font-family: var(--font-head); font-size: 32px; font-weight: 900; line-height: 1; }
+    
+    .adm-role-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 40px; }
+    .adm-role-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .adm-role-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .adm-role-name { font-family: var(--font-head); font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .adm-role-desc { font-size: 13px; color: var(--text-3); font-weight: 500; }
+    .adm-role-badge { font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 20px; border: 1px solid; }
+    
+    .adm-cap-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .adm-cap-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-2); font-weight: 500; }
+    .adm-cap-item svg { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+    
+    .adm-mod-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .adm-mod-tag { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; background: var(--bg-2); color: var(--text-2); border: 1px solid var(--border); }
+    
+    .adm-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .adm-grid { display: grid; grid-template-columns: minmax(250px, 2fr) 180px minmax(200px, 2fr) 100px; gap: 16px; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .adm-th { background: var(--bg-1); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); padding-top: 16px; padding-bottom: 16px; }
+    .adm-tr { transition: background 0.15s; }
+    .adm-tr:hover { background: var(--bg-2); }
+    .adm-tr:last-child { border-bottom: none; }
+    
+    .adm-av { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    
+    /* Toggle Switch iOS */
+    .adm-toggle { width: 44px; height: 24px; background: var(--red); border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s ease; border: none; outline: none; }
+    .adm-toggle.on { background: var(--green); }
+    .adm-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+    .adm-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .adm-toggle.on::after { transform: translateX(20px); }
 
-function renderAdminPermissionCard(role) {
-  const template = getAdminRoleTemplate(role);
-  return `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-        <div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">Profil type</div>
-          <div style="font-family:var(--font-head);font-size:22px;font-weight:800;letter-spacing:-.04em;">${template.label}</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">${template.level}</div>
-        </div>
-        <div style="font-size:11px;font-weight:700;padding:6px 10px;border-radius:999px;background:${template.badgeColor}22;color:${template.badgeColor};border:1px solid ${template.badgeColor}44;">
-          ${template.modules.length} modules
-        </div>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        ${template.modules.map(key => {
-          const mod = adminModuleCatalog().find(m => m.key === key);
-          return `<span style="font-size:11px;padding:6px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);">${mod?.label || key}</span>`;
-        }).join('')}
-      </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;">Capacités clés</div>
-        <div style="display:grid;gap:8px;">
-          ${template.capabilities.map(item => `
-            <div style="font-size:12px;color:var(--text-2);display:flex;align-items:flex-start;gap:8px;">
-              <span style="color:var(--green);font-weight:800;">✓</span>
-              <span>${item}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    </div>
+    .adm-select { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--text-1); font-weight: 600; width: 100%; outline: none; transition: border-color 0.2s; }
+    .adm-select:focus { border-color: var(--primary); }
+    .adm-select:disabled { opacity: 0.5; cursor: not-allowed; background: var(--bg-2); }
+
+    @media (max-width: 960px) {
+      .adm-container { padding: 24px 16px; }
+      .adm-th { display: none; }
+      .adm-grid { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px; }
+      .adm-grid > div { width: 100%; }
+      .adm-toggle { align-self: flex-start; margin-top: 4px; }
+    }
   `;
-}
+  document.head.appendChild(s);
+})();
 
 async function renderAdmin() {
-  if (!isAdmin()) {
-    $('page').innerHTML = `
-      <div style="padding:24px;max-width:760px;margin:0 auto;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:10px;">Accès refusé</div>
-          <div style="font-family:var(--font-head);font-size:32px;font-weight:800;letter-spacing:-.04em;margin-bottom:10px;">Zone d’administration sécurisée</div>
-          <div style="font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:18px;">
-            Cette page centralise la gouvernance des profils, des rôles et de la visibilité globale. Elle est réservée aux administrateurs.
-          </div>
-          <button class="btn btn-primary" onclick="nav('dashboard')">Retour au tableau de bord</button>
-        </div>
-      </div>
-    `;
+  if (typeof isManager !== 'function' || !isManager()) {
+    $('page').innerHTML = `<div style="padding:60px 20px; text-align:center; color:var(--red); font-weight:800; font-size:18px;">🚫 Accès refusé</div>`;
     return;
   }
 
-  const [{ data: users, error: usersError }, { data: journalRows }] = await Promise.all([
-    sb.from('profiles').select('*').order('created_at', { ascending: false }),
-    sb.from('journal').select('id, action, entite, entite_id, created_at, user_nom, details').order('created_at', { ascending: false }).limit(8)
-  ]);
+  $('page').innerHTML = `<div style="padding:80px; text-align:center;"><div class="spinner"></div></div>`;
 
-  if (usersError) {
-    $('page').innerHTML = `
-      <div style="padding:24px;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;">
-          <div style="font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-.04em;">Administration des accès</div>
-          <div style="margin-top:12px;font-size:14px;color:var(--red);">Impossible de charger les profils : ${escHtml(usersError.message || 'erreur inconnue')}</div>
-        </div>
-      </div>
-    `;
+  const { data: users, error } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+  
+  if (error) {
+    $('page').innerHTML = `<div style="padding:40px; color:var(--red); text-align:center;">Erreur de chargement: ${error.message}</div>`;
     return;
   }
 
   const rows = users || [];
-  const stats = adminStatsFromUsers(rows, journalRows || []);
-  const roleLabels = adminRoleLabels();
+  const stats = adminStatsFromUsers(rows);
+  
+  const myId = typeof user !== 'undefined' ? user.id : null;
 
   $('page').innerHTML = `
-    <div style="padding:16px;animation:pageIn .25s ease both;display:grid;gap:16px;">
-      <div style="padding-bottom:16px;border-bottom:2px solid var(--border);display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end;">
-        <div style="max-width:760px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;display:flex;align-items:center;gap:8px;">
-            <span style="display:inline-block;width:16px;height:1px;background:var(--border-strong);"></span>
-            Gouvernance
-            <span style="display:inline-block;width:16px;height:1px;background:var(--border-strong);"></span>
-          </div>
-          <h1 style="font-family:var(--font-head);font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1.6px;line-height:1;margin-bottom:10px;">Admin · Accès & visibilité</h1>
-          <div style="font-size:14px;color:var(--text-2);line-height:1.7;">
-            Vue de pilotage complète des profils de la résidence. Cette V1 fonctionne sans migration SQL supplémentaire :
-            les accès sont dérivés du rôle existant, de l’état <strong>actif / suspendu</strong> et des règles déjà présentes dans l’application.
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn btn-secondary" onclick="renderUsers()">Ouvrir la page Utilisateurs</button>
-          <button class="btn btn-primary" onclick="nav('journal')">Voir le journal</button>
-        </div>
+  <div class="adm-container">
+    
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:32px;">
+      <div>
+        <div class="adm-title">Sécurité & Gouvernance</div>
+        <div class="adm-sub">Matrice des rôles, gestion des accès et visibilité globale des modules par utilisateur.</div>
       </div>
+      <button class="btn btn-secondary" onclick="if(typeof nav==='function') nav('journal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Consulter le journal d'audit
+      </button>
+    </div>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;">
-        ${[
-          { label: 'Profils', value: stats.total, color: 'var(--accent)' },
-          { label: 'Comptes actifs', value: stats.active, color: 'var(--green)' },
-          { label: 'Suspendus', value: stats.suspended, color: 'var(--red)' },
-          { label: 'Administrateurs', value: stats.admins, color: 'var(--violet)' },
-          { label: 'Conseil syndical', value: stats.cs, color: 'var(--amber)' },
-          { label: 'Syndics', value: stats.syndics, color: 'var(--accent)' }
-        ].map(card => `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:10px;">${card.label}</div>
-            <div style="font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1;color:${card.color};">${card.value}</div>
-          </div>
-        `).join('')}
+    <div class="adm-stats-grid">
+      <div class="adm-stat-card">
+        <div class="adm-stat-lbl">Utilisateurs totaux</div>
+        <div class="adm-stat-val" style="color:var(--text-1);">${stats.total}</div>
       </div>
-
-      <div style="background:linear-gradient(135deg,#171614 0%,#252320 100%);border-radius:20px;border:1px solid rgba(255,255,255,.08);padding:18px 20px;color:#fff;display:grid;gap:12px;">
-        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
-          <div style="max-width:760px;">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:8px;">Politique d’accès actuelle</div>
-            <div style="font-family:var(--font-head);font-size:24px;font-weight:800;letter-spacing:-.04em;margin-bottom:8px;">Modèle d’autorisations dérivé des rôles existants</div>
-            <div style="font-size:13px;color:rgba(255,255,255,.72);line-height:1.7;">
-              Sans changer le schéma SQL, la visibilité peut déjà être pilotée par le rôle affecté au profil. Les modules ci-dessous
-              montrent exactement ce qu’un utilisateur peut voir aujourd’hui dans l’application.
-            </div>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <div style="padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);min-width:140px;">
-              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);margin-bottom:4px;">Résidents</div>
-              <div style="font-size:20px;font-weight:800;">${stats.residents}</div>
-            </div>
-            <div style="padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);min-width:140px;">
-              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);margin-bottom:4px;">Logs récents</div>
-              <div style="font-size:20px;font-weight:800;">${stats.recentLogs}</div>
-            </div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;">
-          ${['administrateur', 'membre_cs', 'syndic', 'copropriétaire'].map(renderAdminPermissionCard).join('')}
-        </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-lbl">Administrateurs</div>
+        <div class="adm-stat-val" style="color:var(--purple);">${stats.admins}</div>
       </div>
-
-      <div style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.95fr);gap:16px;align-items:start;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;">
-          <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
-            <div>
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:6px;">Matrice des accès</div>
-              <div style="font-family:var(--font-head);font-size:24px;font-weight:800;letter-spacing:-.04em;">Qui voit quoi</div>
-            </div>
-            <div style="font-size:12px;color:var(--text-3);max-width:420px;line-height:1.6;">
-              Les réglages affichés sont issus de la logique actuelle du produit : rôle, suspension, et sections déjà cachées dans la navigation.
-            </div>
-          </div>
-          <div style="display:grid;">
-            ${rows.map((u, idx) => {
-              const matrix = getAdminUserMatrix(u);
-              const fullName = displayName(u.prenom, u.nom, u.email, 'Résident');
-              const initials = (u.prenom || u.nom || u.email || '?').slice(0, 1).toUpperCase();
-              const bg = matrix.template.badgeColor || 'var(--accent)';
-              return `
-                <div style="padding:16px 18px;border-bottom:${idx < rows.length - 1 ? '1px solid var(--border)' : 'none'};display:grid;gap:12px;">
-                  <div style="display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;">
-                    <div style="display:flex;gap:12px;min-width:0;">
-                      <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:16px;font-weight:800;box-shadow:0 6px 18px ${bg}44;flex-shrink:0;">${initials}</div>
-                      <div style="min-width:0;">
-                        <div style="font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(fullName)}</div>
-                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
-                          <span style="font-size:11px;padding:4px 8px;border-radius:999px;background:${bg}18;color:${bg};border:1px solid ${bg}33;font-weight:700;">${roleLabels[u.role] || u.role}</span>
-                          ${adminAccessBadge(matrix)}
-                          <span style="font-size:11px;color:var(--text-3);">${escHtml(u.email || '—')}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                      ${u.id !== user.id ? `
-                        <select class="select" style="font-size:11px;padding:6px 10px;border-radius:10px;height:auto;min-width:170px;" onchange="changeRole('${u.id}',this.value)">
-                          ${['copropriétaire','membre_cs','syndic','administrateur'].map(r => `<option value="${r}" ${r===u.role?'selected':''}>${roleLabels[r]}</option>`).join('')}
-                        </select>
-                        <button onclick="toggleBan('${u.id}',${u.actif===false},'${escHtml(fullName)}')" style="background:${u.actif===false?'var(--green-light)':'var(--red-light)'};color:${u.actif===false?'var(--green)':'var(--red)'};border:1px solid ${u.actif===false?'var(--green-border)':'var(--red-border)'};font-size:11px;font-weight:700;padding:7px 12px;border-radius:10px;cursor:pointer;font-family:var(--font-body);">
-                          ${u.actif===false ? 'Réactiver' : 'Suspendre'}
-                        </button>
-                      ` : `
-                        <div style="font-size:11px;color:var(--text-3);padding:8px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);">
-                          Compte courant protégé
-                        </div>
-                      `}
-                    </div>
-                  </div>
-
-                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
-                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;">
-                      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px;">Modules visibles</div>
-                      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                        ${matrix.visibleModules.map(mod => `<span style="font-size:11px;padding:6px 9px;border-radius:999px;background:var(--green-light);border:1px solid var(--green-border);color:var(--green);">${mod.label}</span>`).join('')}
-                      </div>
-                    </div>
-                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;">
-                      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px;">Modules masqués</div>
-                      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                        ${matrix.hiddenModules.length ? matrix.hiddenModules.map(mod => `<span style="font-size:11px;padding:6px 9px;border-radius:999px;background:var(--red-light);border:1px solid var(--red-border);color:var(--red);">${mod.label}</span>`).join('') : '<span style="font-size:12px;color:var(--text-3);">Aucun module masqué.</span>'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
-                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;">
-                      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px;">Capacités</div>
-                      <div style="display:grid;gap:6px;">
-                        ${matrix.template.capabilities.map(item => `<div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--green);font-weight:800;">✓</span><span>${item}</span></div>`).join('')}
-                      </div>
-                    </div>
-                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;">
-                      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px;">État et périmètre</div>
-                      <div style="display:grid;gap:7px;">
-                        <div style="font-size:12px;color:var(--text-2);"><strong>Connexion :</strong> ${matrix.canLogin ? 'autorisée' : 'bloquée'}</div>
-                        <div style="font-size:12px;color:var(--text-2);"><strong>Profil :</strong> ${matrix.template.level}</div>
-                        <div style="font-size:12px;color:var(--text-2);"><strong>Tour :</strong> ${escHtml(u.tour || u.batiment || '—')}</div>
-                        <div style="font-size:12px;color:var(--text-2);"><strong>Lot :</strong> ${escHtml(u.lot || '—')}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-
-        <div style="display:grid;gap:16px;">
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px;">Lecture produit</div>
-            <div style="font-family:var(--font-head);font-size:22px;font-weight:800;letter-spacing:-.04em;margin-bottom:10px;">Ce que cette V1 admin pilote déjà</div>
-            <div style="display:grid;gap:10px;">
-              ${[
-                'Attribution des rôles existants sans changer le schéma SQL.',
-                'Blocage immédiat des comptes suspendus via `profile.actif`.',
-                'Visualisation claire des modules visibles par type de profil.',
-                'Point d’entrée unique pour piloter comptes, périmètres et supervision.'
-              ].map(item => `
-                <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--text-2);line-height:1.6;">
-                  <span style="width:18px;height:18px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:11px;">✓</span>
-                  <span>${item}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px;">Modules référencés</div>
-            <div style="display:grid;gap:10px;">
-              ${adminModuleCatalog().map(mod => `
-                <div style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);">
-                  <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">
-                    <div>
-                      <div style="font-size:13px;font-weight:700;">${mod.label}</div>
-                      <div style="font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.5;">${mod.description}</div>
-                    </div>
-                    ${mod.adminOnly ? '<span style="font-size:10px;padding:4px 8px;border-radius:999px;background:rgba(124,58,237,.12);color:var(--violet);border:1px solid rgba(124,58,237,.22);font-weight:700;">Admin</span>' : ''}
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px;">Dernières traces du journal</div>
-            <div style="display:grid;gap:10px;">
-              ${(journalRows || []).length ? (journalRows || []).map(log => `
-                <div style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);">
-                  <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
-                    <div>
-                      <div style="font-size:12px;font-weight:700;color:var(--text-1);">${escHtml(log.action || 'Action')}</div>
-                      <div style="font-size:11px;color:var(--text-3);margin-top:4px;">${escHtml(log.user_nom || 'Système')} · ${escHtml(log.entite || '—')}</div>
-                    </div>
-                    <div style="font-size:11px;color:var(--text-3);white-space:nowrap;">${fmt(log.created_at)}</div>
-                  </div>
-                </div>
-              `).join('') : '<div style="font-size:12px;color:var(--text-3);">Aucune entrée récente disponible.</div>'}
-            </div>
-          </div>
-        </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-lbl">Conseil Syndical</div>
+        <div class="adm-stat-val" style="color:var(--blue);">${stats.cs}</div>
+      </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-lbl">Suspendus / Bloqués</div>
+        <div class="adm-stat-val" style="color:var(--red);">${stats.suspended}</div>
       </div>
     </div>
-  `;
+
+    <h2 style="font-family:var(--font-head); font-size:20px; font-weight:800; margin-bottom:16px;">Profils Types</h2>
+    <div class="adm-role-cards">
+      ${['administrateur', 'membre_cs', 'syndic', 'copropriétaire'].map(r => {
+        const tpl = getAdminRoleTemplate(r);
+        return `
+        <div class="adm-role-card">
+          <div class="adm-role-head">
+            <div>
+              <div class="adm-role-name" style="color:${tpl.badgeColor};">${tpl.label}</div>
+              <div class="adm-role-desc">${tpl.level}</div>
+            </div>
+            <div class="adm-role-badge" style="background:${tpl.bgLight}; color:${tpl.badgeColor}; border-color:${tpl.badgeColor}44;">
+              ${tpl.modules.length} modules
+            </div>
+          </div>
+          
+          <div class="adm-cap-list">
+            ${tpl.capabilities.map(cap => `
+              <div class="adm-cap-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                ${cap}
+              </div>
+            `).join('')}
+          </div>
+          
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-3); margin-bottom:8px;">Visibilité</div>
+          <div class="adm-mod-wrap">
+            ${tpl.modules.slice(0, 6).map(m => `<span class="adm-mod-tag">${m}</span>`).join('')}
+            ${tpl.modules.length > 6 ? `<span class="adm-mod-tag" style="background:transparent; border:none; color:var(--text-3);">+ ${tpl.modules.length - 6} autres</span>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <h2 style="font-family:var(--font-head); font-size:20px; font-weight:800; margin-bottom:16px;">Matrice des Utilisateurs</h2>
+    <div class="adm-table-wrap">
+      <div class="adm-grid adm-th">
+        <div>Utilisateur</div>
+        <div>Rôle & Permissions</div>
+        <div>Modules Visibles</div>
+        <div style="text-align:center;">Accès App</div>
+      </div>
+      
+      <div>
+        ${rows.map(u => {
+          const matrix = getAdminUserMatrix(u);
+          const fullName = typeof displayName === 'function' ? displayName(u.prenom, u.nom, u.email, 'Résident') : u.email;
+          const initials = (u.prenom || u.nom || u.email || '?').charAt(0).toUpperCase();
+          const tpl = matrix.template;
+          
+          // Protection de l'admin actuel
+          const isMe = u.id === myId;
+          
+          return `
+          <div class="adm-grid adm-tr">
+            
+            <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+              <div class="adm-av" style="background:${tpl.badgeColor}; box-shadow:0 4px 12px ${tpl.badgeColor}44;">${initials}</div>
+              <div style="min-width:0;">
+                <div style="font-weight:800; font-size:14px; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${escHtml(fullName)} ${isMe ? '<span style="font-size:10px; background:var(--bg-2); padding:2px 6px; border-radius:6px; margin-left:6px; color:var(--text-2);">MOI</span>' : ''}
+                </div>
+                <div style="font-size:12px; color:var(--text-3); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${escHtml(u.email || 'Pas d\'email')}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <select class="adm-select" onchange="changeUserRole('${u.id}', this.value, '${escHtml(fullName)}')" ${isMe ? 'disabled title="Vous ne pouvez pas modifier votre propre rôle"' : ''}>
+                <option value="copropriétaire" ${u.role==='copropriétaire'?'selected':''}>Résident</option>
+                <option value="membre_cs" ${u.role==='membre_cs'?'selected':''}>Conseil Syndical</option>
+                <option value="syndic" ${u.role==='syndic'?'selected':''}>Syndic externe</option>
+                <option value="administrateur" ${u.role==='administrateur'?'selected':''}>Administrateur</option>
+              </select>
+            </div>
+
+            <div class="adm-mod-wrap">
+              ${matrix.visibleModules.slice(0, 4).map(mod => `<span class="adm-mod-tag" style="background:var(--green-light); border-color:var(--green-border); color:var(--green);">${mod.label}</span>`).join('')}
+              ${matrix.visibleModules.length > 4 ? `<span class="adm-mod-tag" style="background:var(--bg-2); border-color:transparent;">+ ${matrix.visibleModules.length - 4}</span>` : ''}
+              ${matrix.hiddenModules.slice(0, 2).map(mod => `<span class="adm-mod-tag" style="background:var(--red-light); border-color:var(--red-border); color:var(--red); text-decoration:line-through; opacity:0.6;" title="Interdit">${mod.label}</span>`).join('')}
+            </div>
+
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+              <button class="adm-toggle ${matrix.canLogin ? 'on' : ''}" 
+                      id="toggle-access-${u.id}" 
+                      onclick="toggleUserAccess('${u.id}', ${matrix.canLogin}, '${escHtml(fullName)}')"
+                      ${isMe ? 'disabled title="Vous ne pouvez pas vous bloquer vous-même"' : ''}>
+              </button>
+              <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:${matrix.canLogin ? 'var(--green)' : 'var(--red)'};" id="lbl-access-${u.id}">
+                ${matrix.canLogin ? 'Actif' : 'Bloqué'}
+              </div>
+            </div>
+
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+  </div>`;
+}
+
+function escHtml(t) {
+  return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── ACTIONS ───
+
+async function changeUserRole(userId, newRole, userName) {
+  if (!confirm(`Modifier le rôle de ${userName} en "${newRole}" ?`)) {
+    renderAdmin(); // Rétablit la valeur visuelle d'origine
+    return;
+  }
+  
+  const { error } = await sb.from('profiles').update({ role: newRole }).eq('id', userId);
+  if (error) { 
+    if(typeof toast === 'function') toast('Erreur lors de la modification', 'err'); 
+    return; 
+  }
+  
+  if (typeof addLog === 'function') await addLog('Modification rôle', 'admin', userId, { newRole });
+  if (typeof toast === 'function') toast(`Le rôle de ${userName} a été mis à jour`, 'ok');
+  
+  renderAdmin(); // Rafraîchit la matrice
+}
+
+async function toggleUserAccess(userId, currentState, userName) {
+  const newState = !currentState;
+  const actionText = newState ? 'Réactiver' : 'Bloquer (Suspendre)';
+  
+  if (!confirm(`Voulez-vous vraiment ${actionText} l'accès de ${userName} ?`)) return;
+  
+  // Optimistic UI Update
+  const toggle = document.getElementById(`toggle-access-${userId}`);
+  const lbl = document.getElementById(`lbl-access-${userId}`);
+  if (toggle) toggle.classList.toggle('on', newState);
+  if (lbl) {
+    lbl.textContent = newState ? 'Actif' : 'Bloqué';
+    lbl.style.color = newState ? 'var(--green)' : 'var(--red)';
+  }
+
+  // Database Update
+  const { error } = await sb.from('profiles').update({ actif: newState }).eq('id', userId);
+  
+  if (error) { 
+    // Rollback UI
+    if (toggle) toggle.classList.toggle('on', currentState);
+    if(typeof toast === 'function') toast('Erreur serveur', 'err'); 
+    return; 
+  }
+  
+  if (typeof addLog === 'function') await addLog(newState ? 'Compte réactivé' : 'Compte bloqué', 'admin', userId, { userName });
+  if (typeof toast === 'function') toast(`Accès de ${userName} ${newState ? 'réactivé' : 'suspendu'}`, newState ? 'ok' : 'warn');
+  
+  // Reload clean data
+  renderAdmin();
 }
