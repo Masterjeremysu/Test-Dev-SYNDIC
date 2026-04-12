@@ -3,24 +3,24 @@
 //  assets/js/features/permissions/permissions-page.js
 // ============================================================================
 
-const PERM_ROLES_LIST = ['administrateur', 'membre_cs', 'syndic', 'copropriétaire'];
-const PERM_EDITABLE_ROLES = new Set(['membre_cs', 'syndic', 'copropriétaire']);
+var PERM_ROLES_LIST = ['administrateur', 'membre_cs', 'syndic', 'copropriétaire'];
+var PERM_EDITABLE_ROLES = new Set(['membre_cs', 'syndic', 'copropriétaire']);
 
-const PERM_ROLE_LABELS = {
+var PERM_ROLE_LABELS = {
   administrateur: 'Administrateur',
   membre_cs: 'Conseil Syndical',
   syndic: 'Syndic',
   'copropriétaire': 'Coproprietaire'
 };
 
-const PERM_ROLE_META = {
+var PERM_ROLE_META = {
   administrateur: { icon: '🛡️', desc: 'Controle total, vue systeme et gouvernance.' },
   membre_cs: { icon: '🤝', desc: 'Pilotage operationnel de la residence.' },
   syndic: { icon: '🏢', desc: 'Suivi externe et coordination des interventions.' },
   'copropriétaire': { icon: '🏠', desc: 'Usage resident, consultation et participation.' }
 };
 
-const PERM_MODULE_LABELS = {
+var PERM_MODULE_LABELS = {
   dashboard: 'Tableau de bord',
   tickets: 'Signalements',
   map: 'Carte & plan',
@@ -43,7 +43,7 @@ const PERM_MODULE_LABELS = {
   notifications: 'Notifications'
 };
 
-const PERM_MODULE_ICONS = {
+var PERM_MODULE_ICONS = {
   dashboard: '📊',
   tickets: '🎫',
   map: '🗺️',
@@ -66,9 +66,9 @@ const PERM_MODULE_ICONS = {
   notifications: '🔔'
 };
 
-const SENSITIVE_MODULES = new Set(['registre', 'journal', 'users', 'permissions', 'admin', 'contrats', 'cles']);
+var SENSITIVE_MODULES = new Set(['registre', 'journal', 'users', 'permissions', 'admin', 'contrats', 'cles']);
 
-const ACTIONS_META = {
+var ACTIONS_META = {
   view:   { label: 'Voir',  ico: '👁', colorVar: '--accent', bgVar: '--accent-light', borderVar: '--accent-border' },
   create: { label: 'Creer', ico: '+',  colorVar: '--green',  bgVar: '--green-light',  borderVar: '--green-border' },
   edit:   { label: 'Modif', ico: '✏', colorVar: '--amber',  bgVar: '--amber-light',  borderVar: '--amber-border' },
@@ -78,7 +78,7 @@ const ACTIONS_META = {
   moderate: { label: 'Prive', ico: '🔒', colorVar: '--orange', bgVar: '--orange-light', borderVar: '--orange-border' }
 };
 
-const AUDIT_PERMISSION_CATALOG = [
+var AUDIT_PERMISSION_CATALOG = [
   { id: 'dashboard.view', module: 'dashboard', action: 'view', label: 'Voir le tableau de bord', description: 'Accede a la vue d ensemble et aux indicateurs clefs.' },
   { id: 'tickets.view', module: 'tickets', action: 'view', label: 'Voir ses signalements', description: 'Consulte les signalements autorises pour son profil.' },
   { id: 'tickets.create', module: 'tickets', action: 'create', label: 'Creer un signalement', description: 'Declare un incident depuis l application.' },
@@ -154,7 +154,7 @@ const AUDIT_PERMISSION_CATALOG = [
   { id: 'notifications.view', module: 'notifications', action: 'view', label: 'Voir ses notifications', description: 'Consulte les alertes et informations individuelles.' }
 ];
 
-let _pp = {
+var _pp = {
   catalog: [],
   byModule: {},
   rolePerms: {},
