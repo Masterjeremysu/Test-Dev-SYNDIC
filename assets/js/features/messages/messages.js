@@ -1761,6 +1761,15 @@ function _msgSyncMobilePanels(mode) {
   }
 }
 
+/** Mobile shell (position:relative) n'utilise pas translateX : appliquer tout de suite l'onglet courant. */
+function _msgApplyInitialMobilePanels() {
+  if (typeof _msgIsMobile !== 'function' || !_msgIsMobile()) return;
+  const tab = _msgState.activeMobileTab || 'feed';
+  if (tab === 'feed') _msgSyncMobilePanels('main');
+  else if (tab === 'channels') _msgSyncMobilePanels('groups');
+  else _msgSyncMobilePanels('dms');
+}
+
 function _msgScrollToBottom(force = false) {
   const el = $('chat-messages');
   if (!el) return;
@@ -1834,17 +1843,21 @@ renderMessages = function renderMessagesVNext() {
       </div>
     </div>`;
 
-  loadConversations().then(() => {
-    renderSidebarGroups();
-    renderSidebarDMs();
-    if (typeof startMsgRealtime === 'function') startMsgRealtime();
-    if (typeof startFeedRealtime === 'function') startFeedRealtime();
-    _updateMobileTabBadges();
+  _msgApplyInitialMobilePanels();
 
-    if (_msgState.activeMobileTab === 'feed' || _msgState.activeChanType === 'feed') openFeed();
-    else if (_msgState.activeConvId) openConv(_msgState.activeConvId);
-    else openFeed();
-  });
+  loadConversations()
+    .catch((err) => { console.warn('[msg] loadConversations', err); })
+    .then(() => {
+      renderSidebarGroups();
+      renderSidebarDMs();
+      if (typeof startMsgRealtime === 'function') startMsgRealtime();
+      if (typeof startFeedRealtime === 'function') startFeedRealtime();
+      _updateMobileTabBadges();
+
+      if (_msgState.activeMobileTab === 'feed' || _msgState.activeChanType === 'feed') openFeed();
+      else if (_msgState.activeConvId) openConv(_msgState.activeConvId);
+      else openFeed();
+    });
 };
 
 switchMobileTab = function switchMobileTabVNext(tab) {

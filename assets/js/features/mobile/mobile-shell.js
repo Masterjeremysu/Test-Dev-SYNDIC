@@ -113,7 +113,15 @@
     scroll-padding-bottom: calc(var(--mobile-page-bottom) + 16px);
   }
 
-  body[data-page="messages"] #page,
+  body[data-page="messages"] #page {
+    padding: 0 !important;
+    height: calc(var(--app-height, 100dvh) - var(--mobile-topbar-total) - var(--mobile-nav-height));
+    min-height: calc(var(--app-height, 100dvh) - var(--mobile-topbar-total) - var(--mobile-nav-height));
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
   body[data-page="map"] #page {
     padding: 0 !important;
     height: calc(var(--app-height, 100dvh) - var(--mobile-topbar-total) - var(--mobile-nav-height));
@@ -137,25 +145,67 @@
     min-height: calc(var(--app-height, 100dvh) - var(--mobile-topbar-total)) !important;
   }
 
-  body[data-page="messages"] .msg-layout,
-  body[data-page="messages"] .msg-main,
-  body[data-page="messages"] #msg-main,
-  body[data-page="messages"] .msg-sidebar {
+  /* Messagerie : le shell impose position:relative, donc il faut annuler les translateX d'app.css
+     et gérer la visibilité avec display (sinon le fil / canaux / privé restent hors écran). */
+  body[data-page="messages"] #msg-inner-tabs,
+  body[data-page="messages"] .msg-inner-tabs {
+    flex-shrink: 0 !important;
     position: relative !important;
-    inset: auto !important;
-    bottom: auto !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    z-index: 6 !important;
   }
 
   body[data-page="messages"] .msg-layout {
+    position: relative !important;
+    inset: auto !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    width: 100% !important;
     display: flex !important;
+    flex-direction: row !important;
     overflow: hidden !important;
   }
 
-  body[data-page="messages"] .msg-sidebar,
-  body[data-page="messages"] .msg-main {
+  body[data-page="messages"] .msg-sidebar {
+    position: relative !important;
+    inset: auto !important;
+    flex: 1 1 0 !important;
     min-height: 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  body[data-page="messages"] .msg-sidebar.hidden {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  body[data-page="messages"] .msg-main,
+  body[data-page="messages"] #msg-main {
+    position: relative !important;
+    inset: auto !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    transform: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+
+  body[data-page="messages"] .msg-main:not(.visible) {
+    display: none !important;
+  }
+
+  body[data-page="messages"] .msg-main.visible {
+    display: flex !important;
   }
 
   body[data-page="map"] #page > div:first-child {
