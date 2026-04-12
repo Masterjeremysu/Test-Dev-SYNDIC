@@ -225,6 +225,24 @@ function _ppRoleStatus(role) {
   return 'Acces restreint';
 }
 
+function _ppModuleRealPerms(perms) {
+  return (perms || []).filter(item => !item.auditOnly);
+}
+
+function _ppModuleViewPerm(perms) {
+  return (perms || []).find(item => item.id === `${item.module}.view`) || null;
+}
+
+function _ppModuleActionablePerms(role, perms) {
+  return _ppModuleRealPerms(perms).filter(item => _ppCanToggle(role, item));
+}
+
+function _ppModuleAllEnabled(role, perms) {
+  const actionable = _ppModuleActionablePerms(role, perms);
+  if (!actionable.length) return false;
+  return actionable.every(item => _ppRolePermEnabled(role, item.id));
+}
+
 function _ppActionMeta(action) {
   return ACTIONS_META[action] || {
     label: action || 'Action',
@@ -495,6 +513,7 @@ function _ppRenderMatrix() {
       .pp-module-header:hover { background:var(--surface-3); }
       .pp-module-sensitive .pp-module-header { background:rgba(245,158,11,.06); }
       .pp-module-left { display:flex; align-items:center; gap:10px; }
+      .pp-module-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
       .pp-module-icon {
         width:28px; height:28px; border-radius:8px; background:var(--surface); border:1px solid var(--border);
         display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;
@@ -508,6 +527,13 @@ function _ppRenderMatrix() {
       .pp-module-count.full { background:var(--green-light); color:var(--green); border-color:var(--green-border); }
       .pp-module-count.zero { background:var(--surface-2); color:var(--text-3); }
       .pp-module-badge { background:var(--amber-light); color:var(--amber); border-color:var(--amber-border); }
+      .pp-module-quick {
+        display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; border:1px solid var(--border);
+        background:var(--surface); color:var(--text-2); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+      }
+      .pp-module-quick.on { background:var(--green-light); color:var(--green); border-color:var(--green-border); }
+      .pp-module-quick.off { background:var(--red-light); color:var(--red); border-color:var(--red-border); }
+      .pp-module-quick:disabled { opacity:.5; }
       .pp-module-chevron { color:var(--text-3); transition:transform .2s ease; }
       .pp-module-chevron.open { transform:rotate(180deg); }
       .pp-perm-row {
@@ -554,6 +580,7 @@ function _ppRenderMatrix() {
   if (isReadOnlyRole) {
     html += `<div class="pp-readonly-note"><strong>${PERM_ROLE_LABELS[role]} :</strong> ce profil est presente ici pour l audit global. Son acces doit rester complet et n est pas configurable depuis cette matrice.</div>`;
   }
+  html += `<div class="pp-readonly-note"><strong>Mode admin :</strong> tu configures ici <strong>${PERM_ROLE_LABELS[role]}</strong>. Le role connecte reste administrateur, mais les interrupteurs modifient les droits du role selectionne. Utilise les actions rapides <strong>Page</strong> et <strong>Tout</strong> pour couper un module en un clic.</div>`;
 
   if (isLocked) {
     html += `<div class="pp-lock-banner"><span style="font-size:18px;">⛔</span><div>Ce role est actuellement verrouille. Toutes les permissions effectives sont suspendues jusqu a reactivation.</div></div>`;
@@ -578,6 +605,11 @@ function _ppRenderMatrix() {
     const label = PERM_MODULE_LABELS[modId] || modId;
     const icon = PERM_MODULE_ICONS[modId] || '📦';
     const sensitive = SENSITIVE_MODULES.has(modId);
+    const viewPerm = _ppModuleViewPerm(perms);
+    const canQuickView = viewPerm && _ppCanToggle(role, viewPerm);
+    const viewEnabled = viewPerm ? _ppRolePermEnabled(role, viewPerm.id) : false;
+    const moduleAllEnabled = _ppModuleAllEnabled(role, perms);
+    const actionableCount = _ppModuleActionablePerms(role, perms).length;
 
     html += `
       <div class="pp-module ${sensitive ? 'pp-module-sensitive' : ''}">
@@ -588,9 +620,13 @@ function _ppRenderMatrix() {
             ${sensitive ? '<span class="pp-module-badge">Sensible</span>' : ''}
             <span class="pp-module-count ${countClass}">${grantedCount}/${perms.length}</span>
           </div>
-          <svg id="pp-chev-${modId}" class="pp-module-chevron open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M6 9l6 6 6-6"/>
-          </svg>
+          <div class="pp-module-right">
+            ${viewPerm ? `<button class="pp-module-quick ${viewEnabled ? 'on' : 'off'}" ${canQuickView ? `onclick="event.stopPropagation(); ppToggleModuleVisibility('${role}', '${modId}', ${!viewEnabled})"` : 'disabled'}>Page</button>` : ''}
+            ${actionableCount ? `<button class="pp-module-quick ${moduleAllEnabled ? 'on' : 'off'}" onclick="event.stopPropagation(); ppToggleModuleAll('${role}', '${modId}', ${!moduleAllEnabled})">Tout</button>` : ''}
+            <svg id="pp-chev-${modId}" class="pp-module-chevron open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
         </div>
         <div id="pp-body-${modId}">
           ${perms.map(item => {
@@ -659,6 +695,42 @@ async function ppTogglePerm(role, permId, targetState) {
   } finally {
     _pp.saving.delete(key);
     _ppRenderMatrix();
+  }
+}
+
+async function ppToggleModuleVisibility(role, moduleId, targetState) {
+  const perms = _pp.byModule[moduleId] || [];
+  const viewPerm = _ppModuleViewPerm(perms);
+  if (!viewPerm || !_ppCanToggle(role, viewPerm)) return;
+  await ppTogglePerm(role, viewPerm.id, targetState);
+}
+
+async function ppToggleModuleAll(role, moduleId, targetState) {
+  const perms = _pp.byModule[moduleId] || [];
+  const actionable = _ppModuleActionablePerms(role, perms);
+  if (!actionable.length) return;
+
+  const previous = {};
+  actionable.forEach(item => {
+    previous[item.id] = _pp.rolePerms[role]?.[item.id] === true;
+    _pp.rolePerms[role][item.id] = targetState;
+  });
+  _ppRenderSummary();
+  _ppRenderMatrix();
+
+  try {
+    const results = await Promise.all(actionable.map(item =>
+      Permissions.setPermission(role, item.id, targetState)
+    ));
+    if (results.some(ok => !ok)) throw new Error('save_failed');
+    toast(`Module ${PERM_MODULE_LABELS[moduleId] || moduleId} mis a jour`, 'ok');
+  } catch (e) {
+    actionable.forEach(item => {
+      _pp.rolePerms[role][item.id] = previous[item.id];
+    });
+    _ppRenderSummary();
+    _ppRenderMatrix();
+    toast('Erreur de sauvegarde du module', 'err');
   }
 }
 
