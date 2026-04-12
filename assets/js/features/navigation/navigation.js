@@ -29,6 +29,8 @@ function nav(page, noClose, isBackNavigation = false) {
   }
 
   currentPage = page;
+  document.body?.setAttribute('data-page', page);
+  document.documentElement?.setAttribute('data-page', page);
   if (!noClose) closeSidebar();
   
   // 2. GESTION DU LAYOUT (Padding / MaxWidth)

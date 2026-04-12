@@ -16,6 +16,9 @@ function renderPage(p) {
     currentPage = p;
   }
 
+  document.body?.setAttribute('data-page', p);
+  document.documentElement?.setAttribute('data-page', p);
+
   // 2. Reset de l'animation pour un effet "SaaS" fluide à chaque changement
   el.style.animation = 'none';
   el.offsetHeight; // Force le reflow
