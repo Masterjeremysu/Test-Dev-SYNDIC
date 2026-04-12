@@ -1678,3 +1678,794 @@ async function publishFeedEvent(type, contenu) {
     if (res.error) console.warn('[feed]', res.error.message);
   } catch (e) { console.warn('[feed]', e.message); }
 }
+
+// Overrides UX/UI vNext - Messages & Communaute
+function _msgIsMobile() {
+  return window.innerWidth <= 768;
+}
+
+function _msgConversationKind(conv) {
+  return conv?.type === 'prive' ? 'dm' : 'chan';
+}
+
+function _msgConversationTitle(conv) {
+  if (!conv) return 'Discussion';
+  const raw = conv.titre || 'Discussion';
+  const idx = raw.indexOf(' ');
+  return idx > 0 ? raw.substring(idx + 1) : raw;
+}
+
+function _msgConversationEmoji(conv) {
+  if (!conv || !conv.titre) return conv?.type === 'prive' ? '🔒' : '💬';
+  const first = conv.titre.split(' ')[0] || '';
+  return first.length <= 3 ? first : (conv.type === 'prive' ? '🔒' : '💬');
+}
+
+function _msgSidebarPreview(conv) {
+  if (!conv) return '';
+  if (conv.type === 'prive') return 'Conversation privee';
+  if ((conv.titre || '').includes(profile?.tour || '__')) return 'Canal prioritaire pour votre tour';
+  return 'Canal de discussion residence';
+}
+
+function _msgShellWelcome() {
+  return `
+    <div class="chat-empty msg-shell-welcome" id="msg-welcome">
+      <div class="msg-shell-welcome-ico">👋</div>
+      <div class="msg-shell-welcome-kicker">Boite de reception</div>
+      <div class="msg-shell-welcome-title">Choisissez une discussion</div>
+      <div class="msg-shell-welcome-copy">Ouvrez un canal, un message prive ou le fil de communaute pour echanger dans une interface plus claire et plus mobile-native.</div>
+    </div>`;
+}
+
+function _msgSetActiveTabUI() {
+  document.querySelectorAll('.msg-inner-tab').forEach((t, i) => {
+    const tabs = ['feed', 'channels', 'dms'];
+    t.classList.toggle('active', tabs[i] === _msgState.activeMobileTab);
+  });
+}
+
+function _msgSyncMobilePanels(mode) {
+  const sidebar = $('msg-sidebar');
+  const main = $('msg-main');
+  if (!sidebar || !main) return;
+
+  const showMain = mode === 'main';
+  sidebar.classList.toggle('hidden', showMain && _msgIsMobile());
+  main.classList.toggle('visible', showMain || !_msgIsMobile());
+
+  if (!_msgIsMobile()) {
+    sidebar.style.display = '';
+    $('chan-list-groups') && ($('chan-list-groups').style.display = 'block');
+    $('chan-list-dms') && ($('chan-list-dms').style.display = 'block');
+    return;
+  }
+
+  const groupsLabel = document.querySelectorAll('.msg-section-label')[1];
+  const dmsLabel = document.querySelectorAll('.msg-section-label')[2];
+  if (mode === 'groups') {
+    $('chan-list-groups') && ($('chan-list-groups').style.display = 'block');
+    $('chan-list-dms') && ($('chan-list-dms').style.display = 'none');
+    if (groupsLabel) groupsLabel.style.display = 'block';
+    if (dmsLabel) dmsLabel.style.display = 'none';
+  } else if (mode === 'dms') {
+    $('chan-list-groups') && ($('chan-list-groups').style.display = 'none');
+    $('chan-list-dms') && ($('chan-list-dms').style.display = 'block');
+    if (groupsLabel) groupsLabel.style.display = 'none';
+    if (dmsLabel) dmsLabel.style.display = 'flex';
+  } else {
+    $('chan-list-groups') && ($('chan-list-groups').style.display = 'block');
+    $('chan-list-dms') && ($('chan-list-dms').style.display = 'block');
+    if (groupsLabel) groupsLabel.style.display = 'block';
+    if (dmsLabel) dmsLabel.style.display = 'flex';
+  }
+}
+
+function _msgScrollToBottom(force = false) {
+  const el = $('chat-messages');
+  if (!el) return;
+  const shouldStick = force || (el.scrollHeight - el.scrollTop - el.clientHeight < 100);
+  if (!shouldStick) return;
+  requestAnimationFrame(() => {
+    el.scrollTop = el.scrollHeight;
+  });
+}
+
+renderMessages = function renderMessagesVNext() {
+  const page = $('page');
+  loadMsgDrafts();
+
+  page.innerHTML = `
+    <div class="msg-inner-tabs msg-shell-tabs" id="msg-inner-tabs">
+      <button class="msg-inner-tab ${_msgState.activeMobileTab === 'feed' ? 'active' : ''}" onclick="switchMobileTab('feed')">
+        <span class="msg-inner-tab-ico">🏘️</span><span>Communaute</span>
+      </button>
+      <button class="msg-inner-tab ${_msgState.activeMobileTab === 'channels' ? 'active' : ''}" onclick="switchMobileTab('channels')" id="msg-tab-channels">
+        <span class="msg-inner-tab-ico">💬</span><span>Canaux</span>
+        <span class="msg-inner-tab-badge" id="tab-badge-channels" style="display:none;"></span>
+      </button>
+      <button class="msg-inner-tab ${_msgState.activeMobileTab === 'dms' ? 'active' : ''}" onclick="switchMobileTab('dms')" id="msg-tab-dms">
+        <span class="msg-inner-tab-ico">🔒</span><span>Prive</span>
+        <span class="msg-inner-tab-badge" id="tab-badge-dms" style="display:none;"></span>
+      </button>
+    </div>
+
+    <div class="msg-layout msg-shell" id="msg-layout">
+      <div class="msg-sidebar msg-shell-sidebar" id="msg-sidebar">
+        <div class="msg-shell-sidebar-top">
+          <div class="msg-shell-brand">
+            <div class="msg-shell-brand-kicker">Messagerie</div>
+            <div class="msg-shell-brand-title">Discussions</div>
+            <div class="msg-shell-brand-copy">Canaux de residence, conversations privees et communaute locale dans une seule vue plus nette.</div>
+          </div>
+          <label class="msg-shell-search" for="msg-search-conv">
+            <span class="msg-shell-search-ico">🔍</span>
+            <input class="input" id="msg-search-conv" placeholder="Rechercher une conversation..." oninput="onMsgConvSearchInput(event)">
+          </label>
+        </div>
+
+        <div class="msg-sidebar-scroll msg-shell-sidebar-scroll">
+          <div class="msg-section-label msg-shell-section-label">Communaute</div>
+          <div class="msg-chan-item msg-shell-community-card ${_msgState.activeChanType==='feed'?'active':''}" id="chan-feed" onclick="openFeed()">
+            <div class="msg-shell-community-icon">🏘️</div>
+            <div class="msg-shell-community-copy">
+              <div class="msg-chan-name msg-shell-community-title">Le fil du quartier</div>
+              <div class="msg-shell-community-sub">Annonces, entraide et infos residence</div>
+            </div>
+          </div>
+
+          <div class="msg-section-label msg-shell-section-label">Groupes & Canaux</div>
+          <div id="chan-list-groups" class="msg-shell-list"></div>
+
+          <div class="msg-section-label msg-shell-section-label msg-shell-section-row">
+            Messages prives
+            <button class="btn btn-ghost btn-sm msg-shell-inline-btn" onclick="openNewDM()">+ Nouveau</button>
+          </div>
+          <div id="chan-list-dms" class="msg-shell-list msg-shell-list-last"></div>
+        </div>
+
+        <button class="msg-fab-mobile msg-shell-fab" onclick="openNewDM()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </button>
+      </div>
+
+      <div class="msg-main msg-shell-main" id="msg-main">
+        ${_msgShellWelcome()}
+      </div>
+    </div>`;
+
+  loadConversations().then(() => {
+    renderSidebarGroups();
+    renderSidebarDMs();
+    if (typeof startMsgRealtime === 'function') startMsgRealtime();
+    if (typeof startFeedRealtime === 'function') startFeedRealtime();
+    _updateMobileTabBadges();
+
+    if (_msgState.activeMobileTab === 'feed' || _msgState.activeChanType === 'feed') openFeed();
+    else if (_msgState.activeConvId) openConv(_msgState.activeConvId);
+    else openFeed();
+  });
+};
+
+switchMobileTab = function switchMobileTabVNext(tab) {
+  _msgState.activeMobileTab = tab;
+  _msgSetActiveTabUI();
+
+  if (tab === 'feed') {
+    openFeed();
+  } else if (tab === 'channels') {
+    _msgSyncMobilePanels('groups');
+  } else {
+    _msgSyncMobilePanels('dms');
+  }
+};
+
+_showMobileSidebarFiltered = function showMobileSidebarFilteredVNext(type) {
+  _msgSyncMobilePanels(type === 'prive' ? 'dms' : 'groups');
+};
+
+mobileShowMain = function mobileShowMainVNext() {
+  _msgSyncMobilePanels('main');
+};
+
+mobileShowSidebar = function mobileShowSidebarVNext() {
+  _msgSyncMobilePanels(_msgState.activeChanType === 'dm' ? 'dms' : 'groups');
+  _msgState.activeConvId = null;
+};
+
+mobileBackToChannelList = function mobileBackToChannelListVNext() {
+  mobileShowSidebar();
+};
+
+renderSidebarGroups = function renderSidebarGroupsVNext() {
+  const el = $('chan-list-groups');
+  if (!el) return;
+  const q = _msgState.convFilter || '';
+  const convs = filterConvsByRole(_msgState.conversations)
+    .filter(c => !c.type || c.type === 'groupe')
+    .filter(c => !q || (c.titre || '').toLowerCase().includes(q));
+
+  const userTour = profile?.tour || null;
+  const sorted = [...convs].sort((a, b) => {
+    const aIsTour = userTour && (a.titre || '').includes(userTour);
+    const bIsTour = userTour && (b.titre || '').includes(userTour);
+    if (aIsTour && !bIsTour) return -1;
+    if (!aIsTour && bIsTour) return 1;
+    return 0;
+  });
+
+  el.innerHTML = sorted.map(c => {
+    const isActive = _msgState.activeConvId === c.id && _msgState.activeChanType === 'chan';
+    const unread = _msgState.unreadByConv?.[c.id] || 0;
+    const isMyTower = userTour && (c.titre || '').includes(userTour);
+    return `
+      <button class="msg-shell-item ${isActive ? 'active' : ''}" id="chan-${c.id}" onclick="openConv('${c.id}')">
+        <span class="msg-shell-item-icon">${_msgConversationEmoji(c)}</span>
+        <span class="msg-shell-item-copy">
+          <span class="msg-shell-item-title">${escHtml(_msgConversationTitle(c))}${isMyTower ? '<span class="msg-shell-item-tag">Ma tour</span>' : ''}</span>
+          <span class="msg-shell-item-sub">${_msgSidebarPreview(c)}</span>
+        </span>
+        ${unread > 0 ? `<span class="msg-shell-item-badge">${unread > 9 ? '9+' : unread}</span>` : ''}
+      </button>`;
+  }).join('') || '<div class="msg-shell-empty-list">Aucun canal disponible</div>';
+};
+
+renderSidebarDMs = function renderSidebarDMsVNext() {
+  const el = $('chan-list-dms');
+  if (!el) return;
+  const q = _msgState.convFilter || '';
+  const dms = _msgState.conversations
+    .filter(c => c.type === 'prive')
+    .filter(c => !q || (c.titre || '').toLowerCase().includes(q));
+
+  if (!dms.length) {
+    el.innerHTML = '<div class="msg-shell-empty-list">Aucun message prive pour le moment.</div>';
+    return;
+  }
+
+  el.innerHTML = dms.map(c => {
+    const isActive = _msgState.activeConvId === c.id && _msgState.activeChanType === 'dm';
+    const unread = _msgState.unreadByConv?.[c.id] || 0;
+    const title = _msgConversationTitle(c).replace(/^🔒\s*/, '');
+    return `
+      <button class="msg-shell-item ${isActive ? 'active' : ''}" id="chan-${c.id}" onclick="openConv('${c.id}')">
+        <span class="msg-shell-item-icon msg-shell-item-icon-avatar" style="background:${avatarColor(title)};">${title.charAt(0).toUpperCase()}</span>
+        <span class="msg-shell-item-copy">
+          <span class="msg-shell-item-title">${escHtml(title)}</span>
+          <span class="msg-shell-item-sub">Conversation privee</span>
+        </span>
+        ${unread > 0 ? `<span class="msg-shell-item-badge">${unread > 9 ? '9+' : unread}</span>` : ''}
+      </button>`;
+  }).join('');
+};
+
+openConv = async function openConvVNext(convId) {
+  saveCurrentDraft();
+  stopFeedCommentsPoll();
+
+  const conv = _msgState.conversations.find(c => c.id === convId);
+  if (!conv) return;
+
+  _msgState.activeConvId = convId;
+  _msgState.activeChanType = _msgConversationKind(conv);
+  _msgState.activeMobileTab = _msgState.activeChanType === 'dm' ? 'dms' : 'channels';
+
+  document.querySelectorAll('.msg-chan-item,.msg-dm-item,.msg-shell-item').forEach(el => el.classList.remove('active'));
+  $('chan-feed')?.classList.remove('active');
+  $(`chan-${convId}`)?.classList.add('active');
+  _msgSetActiveTabUI();
+
+  mobileShowMain();
+
+  const emoji = _msgConversationEmoji(conv);
+  const title = _msgConversationTitle(conv);
+  const isPrivate = conv.type === 'prive';
+
+  const main = $('msg-main');
+  if (!main) return;
+
+  main.innerHTML = `
+    <div class="msg-chan-header msg-shell-chat-header">
+      <button class="msg-back-btn" onclick="mobileBackToChannelList()">←</button>
+      <div class="msg-shell-chat-avatar">${emoji}</div>
+      <div class="msg-shell-chat-head-copy">
+        <div class="msg-chan-title msg-shell-chat-title">${escHtml(title)}</div>
+        <div class="msg-chan-desc msg-shell-chat-desc">${isPrivate ? 'Conversation privee' : 'Canal de residence'}</div>
+      </div>
+    </div>
+
+    <div class="chat-messages msg-shell-chat-stream" id="chat-messages">
+      <div style="text-align:center;padding:40px;"><div class="spinner"></div></div>
+    </div>
+
+    <div class="msg-reply-bar" id="msg-reply-bar" style="display:none;">
+      <div class="msg-reply-bar-content" id="msg-reply-bar-content"></div>
+      <button class="msg-reply-bar-close" onclick="clearReply()">×</button>
+    </div>
+
+    <div class="chat-input-bar msg-shell-chat-composer">
+      <div class="chat-input-wrap msg-shell-chat-input-wrap">
+        <button class="btn btn-ghost btn-sm msg-shell-emoji-btn" onclick="pickFeedEmoji(event)">☺</button>
+        <textarea class="chat-input msg-shell-chat-input" id="chat-input" placeholder="Ecrire un message..." rows="1"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';onChatInput(event);saveCurrentDraft();"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey&&window.innerWidth>768){event.preventDefault();sendMessage();}"></textarea>
+        <div id="chat-mention-list" class="chat-mention-pop" style="display:none;"></div>
+      </div>
+      <button class="chat-send msg-shell-chat-send" onclick="sendMessage()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9"/></svg>
+      </button>
+    </div>`;
+
+  await loadMessages(convId);
+  restoreCurrentDraft();
+  _msgState.unreadByConv[convId] = 0;
+  renderSidebarGroups();
+  renderSidebarDMs();
+  _updateMobileTabBadges();
+  markConvRead(convId);
+};
+
+renderMessageBubbles = function renderMessageBubblesVNext() {
+  const el = $('chat-messages');
+  if (!el) return;
+  const msgs = _msgState.messages || [];
+  const keepBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+
+  if (!msgs.length) {
+    el.innerHTML = `
+      <div class="msg-shell-empty-chat">
+        <div class="msg-shell-empty-chat-ico">💬</div>
+        <div class="msg-shell-empty-chat-title">Nouvelle discussion</div>
+        <div class="msg-shell-empty-chat-copy">Soyez le premier a envoyer un message dans cette conversation.</div>
+      </div>`;
+    return;
+  }
+
+  let lastDate = null;
+  let lastAuteur = null;
+  const html = [];
+
+  msgs.forEach((m) => {
+    const isMine = m.auteur_id === user.id;
+    const auteur = m.profiles ? displayName(m.profiles.prenom, m.profiles.nom, null, '?') : '?';
+    const dt = new Date(m.created_at);
+    const dateStr = dt.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const timeStr = dt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const showSender = !isMine && auteur !== lastAuteur;
+    const isConsecutive = auteur === lastAuteur && dateStr === lastDate;
+
+    if (dateStr !== lastDate) {
+      html.push(`<div class="msg-date-sep"><span>${dateStr}</span></div>`);
+      lastDate = dateStr;
+      lastAuteur = null;
+    }
+
+    let replyHtml = '';
+    if (m.reply) {
+      const replyAuteur = m.reply.profiles ? displayName(m.reply.profiles.prenom, m.reply.profiles.nom, null, '?') : '?';
+      replyHtml = `
+        <div class="msg-reply-preview">
+          <strong>${escHtml(replyAuteur)}</strong>
+          <span>${formatRichText((m.reply.texte || '').substring(0, 60))}</span>
+        </div>`;
+    }
+
+    const reacts = (_msgState.msgReactions || {})[m.id] || [];
+    const grouped = {};
+    reacts.forEach(r => {
+      if (!grouped[r.emoji]) grouped[r.emoji] = { count: 0, mine: false };
+      grouped[r.emoji].count++;
+      if (r.user_id === user.id) grouped[r.emoji].mine = true;
+    });
+
+    const reactHtml = Object.entries(grouped).map(([emoji, data]) => `
+      <button class="msg-reaction ${data.mine ? 'mine' : ''}" onclick="toggleMsgReaction('${m.id}','${emoji}')">
+        <span>${emoji}</span>
+        <span class="msg-reaction-count">${data.count}</span>
+      </button>`).join('');
+
+    html.push(`
+      <div class="msg-group ${isMine ? 'mine' : 'theirs'}">
+        ${showSender ? `<div class="msg-sender-name">${escHtml(auteur)}</div>` : ''}
+        <div class="msg-shell-bubble-row ${isMine ? 'mine' : 'theirs'}">
+          ${!isMine ? `<div class="msg-shell-bubble-avatar ${isConsecutive ? 'ghost' : ''}" style="background:${avatarColor(auteur)};">${isConsecutive ? '' : auteur.charAt(0).toUpperCase()}</div>` : ''}
+          <div class="msg-shell-bubble-stack">
+            <div class="msg-bubble ${isMine ? 'mine' : 'theirs'} ${isConsecutive ? 'is-consecutive' : ''}">
+              ${replyHtml}
+              ${formatRichText(m.texte || '')}
+            </div>
+            ${reactHtml ? `<div class="msg-reactions">${reactHtml}</div>` : ''}
+            <div class="msg-time-row">${timeStr}</div>
+          </div>
+        </div>
+      </div>`);
+
+    lastAuteur = auteur;
+  });
+
+  el.innerHTML = `<div class="msg-shell-chat-list">${html.join('')}</div>`;
+  _msgScrollToBottom(keepBottom);
+};
+
+renderFeed = function renderFeedVNext() {
+  const el = $('feed-left-scroll');
+  if (!el) return;
+  const rows = sortFeedPosts((_msgState.feed || []).filter(p => p.type !== 'comment'));
+  const f = _msgState.feedFilter || 'tout';
+  const inFilter = p => f === 'tout' || feedPostCategory(p) === f;
+
+  FEED_COMMUNITY_CATS.forEach(c => {
+    const badge = $(`feed-cat-count-${c.id}`);
+    if (!badge) return;
+    const n = feedCountForFilter(c.id);
+    badge.textContent = n > 0 ? String(n) : '';
+    badge.style.display = n > 0 ? '' : 'none';
+  });
+
+  const filtered = rows.filter(inFilter);
+  if (!filtered.length) {
+    el.innerHTML = `
+      <div class="feed-empty-cat">
+        <div class="feed-empty-cat-ico">🌿</div>
+        <div class="feed-empty-cat-title">Le fil est encore calme</div>
+        <div class="feed-empty-cat-desc">Lancez la premiere conversation utile du quartier ou partagez une info pour la residence.</div>
+      </div>`;
+    return;
+  }
+
+  const pinnedBlock = filtered.filter(p => p.epingle && p.type === 'post');
+  const rest = filtered.filter(p => !(p.epingle && p.type === 'post'));
+  const showBoard = pinnedBlock.length && (f === 'tout' || f === 'panneau');
+
+  let html = '';
+  if (showBoard) {
+    html += `
+      <section class="feed-board-section">
+        <header class="feed-board-head">
+          <div class="feed-board-pin">📌</div>
+          <div>
+            <div class="feed-board-head-title">Panneau d'affichage</div>
+            <div class="feed-board-head-sub">Les informations importantes a lire en premier</div>
+          </div>
+        </header>
+        <div class="feed-board-posts">${pinnedBlock.map(p => renderFeedPost(p, true)).join('')}</div>
+      </section>`;
+  }
+
+  if (rest.length) {
+    html += `
+      <div class="feed-timeline-label"><span>Dernieres conversations</span></div>
+      <div class="msg-shell-feed-list">${rest.map(p => renderFeedPost(p)).join('')}</div>`;
+  }
+
+  el.innerHTML = html;
+  restoreFeedOpenCommentThreads();
+};
+
+renderFeedPost = function renderFeedPostVNext(p, isPinnedBoard = false) {
+  const auteur = p.profiles ? displayName(p.profiles.prenom, p.profiles.nom, p.profiles.email, 'Resident') : 'Resident';
+  const initiale = auteur.charAt(0).toUpperCase();
+  const color = avatarColor(auteur);
+  const time = typeof depuisJours === 'function' ? depuisJours(p.created_at) : '';
+  const isMine = p.auteur_id === user?.id;
+  const cat = feedPostCategory(p);
+  const cmeta = feedCatMeta(cat);
+  const accent = feedCatAccent(cat);
+  const affiche = p.epingle && p.type === 'post';
+  const unread = _msgState.feedCommentUnreadByPost[String(p.id)] || 0;
+
+  const reacts = _msgState.feedReactions[String(p.id)] || [];
+  const reactGroups = {};
+  reacts.forEach(r => {
+    if (!reactGroups[r.emoji]) reactGroups[r.emoji] = { count: 0, mine: false };
+    reactGroups[r.emoji].count++;
+    if (r.user_id === user?.id) reactGroups[r.emoji].mine = true;
+  });
+
+  const reactHtml = Object.entries(reactGroups).map(([emoji, data]) => `
+    <button class="feed-reaction ${data.mine ? 'mine' : ''}" onclick="toggleFeedReaction('${p.id}','${emoji}')">
+      <span>${emoji}</span>
+      <span class="feed-reaction-count">${data.count}</span>
+    </button>`).join('');
+
+  let body = '';
+  if (p.type === 'post') {
+    body = `
+      ${p.titre_panneau ? `<div class="feed-post-affiche-titre">${escHtml(p.titre_panneau)}</div>` : ''}
+      <div class="feed-post-body">${formatRichText(p.contenu || '')}</div>`;
+  } else if (p.type === 'ticket') {
+    body = `<div class="feed-event-card ticket">🔧 ${escHtml(p.contenu || '')}</div>`;
+  } else if (p.type === 'resolved') {
+    body = `<div class="feed-event-card resolved">✅ ${escHtml(p.contenu || '')}</div>`;
+  } else if (p.type === 'vote') {
+    body = `<div class="feed-event-card vote">🗳️ ${escHtml(p.contenu || '')}</div>`;
+  } else {
+    body = `<div class="feed-post-body">${formatRichText(p.contenu || '')}</div>`;
+  }
+
+  const pinBtn = (typeof canManageAnnonces === 'function' && canManageAnnonces()) && p.type === 'post' && !isPinnedBoard
+    ? `<button class="btn btn-ghost btn-sm feed-pin-btn" onclick="event.preventDefault();toggleFeedPin('${p.id}')">${p.epingle ? '📌' : '📍'}<span class="feed-pin-lbl">${p.epingle ? 'Epingle' : 'Epingler'}</span></button>`
+    : '';
+
+  return `
+    <article class="feed-post ${affiche ? 'feed-post--affiche' : ''}" id="post-${p.id}">
+      <div class="feed-post-header">
+        <div class="feed-post-av" style="background:${color};">${initiale}</div>
+        <div class="feed-post-meta">
+          <div class="feed-post-author-line">
+            <span class="feed-post-author">${escHtml(auteur)}</span>
+            <span class="feed-post-cat-badge" style="background:${accent}15; color:${accent};">${cmeta.emoji} ${escHtml(cmeta.label)}</span>
+          </div>
+          <div class="feed-post-time">${time}</div>
+        </div>
+        <div class="feed-post-header-actions">
+          ${pinBtn}
+          ${isMine ? `<button class="btn btn-ghost btn-sm feed-del-btn" onclick="deleteFeedPost('${p.id}')" title="Supprimer">✕</button>` : ''}
+        </div>
+      </div>
+
+      ${body}
+
+      ${reactHtml ? `<div class="feed-reactions">${reactHtml}</div>` : ''}
+
+      <div class="feed-post-actions">
+        ${EMOJIS.slice(0, 3).map(e => `<button class="feed-action-btn" onclick="toggleFeedReaction('${p.id}','${e}')">${e}</button>`).join('')}
+        <button class="feed-action-btn" onclick="openFeedThread('${p.id}')">Repondre ${unread > 0 ? `<span class="feed-unread-comment-badge" id="feed-unread-${p.id}">${unread}</span>` : ''}</button>
+      </div>
+    </article>`;
+};
+
+openFeedThread = async function openFeedThreadVNext(postId) {
+  const sid = String(postId);
+  _msgState.activeFeedThreadPostId = sid;
+  _msgState.feedThreadRenderedCommentIds = new Set();
+  _msgState.feedThreadState = { loaded: false, oldestLoadedAt: null, hasMore: false };
+  _msgState.feedCommentUnreadByPost[sid] = 0;
+
+  const split = $('feed-split');
+  if (split) split.classList.add('thread-active');
+
+  let post = _msgState.feed.find(p => String(p.id) === sid);
+  if (!post) {
+    const { data } = await sb.from('feed_posts').select('*, profiles(id,prenom,nom,email)').eq('id', sid).single();
+    post = data;
+  }
+  if (!post) return;
+
+  const auteur = post.profiles ? displayName(post.profiles.prenom, post.profiles.nom, post.profiles.email, 'Resident') : 'Resident';
+  const color = avatarColor(auteur);
+  const initiale = auteur.charAt(0).toUpperCase();
+  const time = typeof depuisJours === 'function' ? depuisJours(post.created_at) : '';
+  const threadPane = $('feed-thread-pane');
+  if (!threadPane) return;
+
+  threadPane.innerHTML = `
+    <div class="feed-thread-wrap">
+      <div class="feed-thread-header">
+        <div class="feed-thread-head-left">
+          <button class="feed-thread-back-btn" onclick="closeFeedThread()">←</button>
+          <div class="feed-post-av" style="background:${color}; width:34px; height:34px; font-size:13px;">${initiale}</div>
+          <div class="feed-thread-head-meta">
+            <div class="feed-thread-head-author">${escHtml(auteur)}</div>
+            <div class="feed-thread-head-time">${time}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feed-thread-post-body">
+        ${post.titre_panneau ? `<div class="feed-post-affiche-titre">${escHtml(post.titre_panneau)}</div>` : ''}
+        <div class="feed-post-body">${formatRichText(post.contenu || '')}</div>
+      </div>
+
+      <div class="feed-thread-scroll" id="feed-thread-scroll">
+        <div class="feed-timeline-label"><span>Commentaires</span></div>
+        <div style="text-align:center;">
+          <button id="feed-thread-load-more-btn" class="btn btn-ghost btn-sm" style="display:none;" onclick="loadFeedThreadOlder()">Charger les plus anciens</button>
+        </div>
+        <div class="feed-thread-comments" id="feed-thread-comments-list"></div>
+      </div>
+
+      <div class="feed-thread-composer">
+        <div class="feed-thread-composer-box">
+          <textarea id="feed-thread-comment-input" class="feed-compose-input" placeholder="Ecrire une reponse..." rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendFeedThreadComment();}"></textarea>
+          <button class="chat-send" onclick="sendFeedThreadComment()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  await loadFeedThreadComments(sid, { older: false });
+};
+
+closeFeedThread = function closeFeedThreadVNext() {
+  _msgState.activeFeedThreadPostId = null;
+  const split = $('feed-split');
+  if (split) split.classList.remove('thread-active');
+  const pane = $('feed-thread-pane');
+  if (pane) {
+    pane.innerHTML = `
+      <div class="feed-thread-empty">
+        <div class="msg-shell-welcome-ico">💬</div>
+        <div class="msg-shell-welcome-title">Ouvrez une discussion</div>
+        <div class="msg-shell-welcome-copy">Touchez repondre sous un message pour suivre le fil complet ici.</div>
+      </div>`;
+  }
+};
+
+renderFeedCommentLine = function renderFeedCommentLineVNext(c) {
+  const auteur = c.profiles ? displayName(c.profiles.prenom, c.profiles.nom, c.profiles.email, 'Resident') : 'Resident';
+  const color = avatarColor(auteur);
+  const timeStr = typeof depuisJours === 'function' ? depuisJours(c.created_at) : '';
+  const isMe = c.auteur_id === user?.id;
+
+  return `
+    <div class="feed-comment ${isMe ? 'mine' : ''}">
+      ${!isMe ? `<div class="feed-comment-av" style="background:${color};">${auteur.charAt(0).toUpperCase()}</div>` : ''}
+      <div class="feed-comment-bubble">
+        <div class="feed-comment-author">${isMe ? 'Vous' : escHtml(auteur)} · ${timeStr}</div>
+        <div>${formatRichText(c.contenu || '')}</div>
+      </div>
+    </div>`;
+};
+
+loadFeedThreadComments = async function loadFeedThreadCommentsVNext(postId, { older = false } = {}) {
+  const sid = String(postId);
+  const listEl = $('feed-thread-comments-list');
+  const scrollEl = $('feed-thread-scroll');
+  const btnEl = $('feed-thread-load-more-btn');
+  if (!listEl || !btnEl || !scrollEl) return;
+
+  const limit = 30;
+
+  if (!older) {
+    _msgState.feedThreadRenderedCommentIds = new Set();
+    listEl.innerHTML = '<div class="msg-shell-empty-list">Chargement...</div>';
+  }
+
+  const baseQ = sb.from('feed_posts')
+    .select('*, profiles(id,prenom,nom,email)')
+    .eq('reference_id', sid)
+    .eq('type', 'comment');
+
+  let q = baseQ;
+  if (older && _msgState.feedThreadState.oldestLoadedAt) q = q.lt('created_at', _msgState.feedThreadState.oldestLoadedAt);
+
+  const { data } = await q.order('created_at', { ascending: false }).limit(limit);
+  const rows = data || [];
+
+  if (!rows.length) {
+    if (!older) listEl.innerHTML = '<div class="msg-shell-empty-list">Aucun commentaire. Soyez le premier a repondre.</div>';
+    setFeedThreadHasMore(false, null);
+    btnEl.style.display = 'none';
+    return;
+  }
+
+  const commentsAsc = [...rows].reverse();
+  const hasMore = rows.length === limit;
+  const oldest = commentsAsc[0]?.created_at || null;
+  setFeedThreadHasMore(hasMore, oldest);
+  btnEl.style.display = hasMore ? 'inline-flex' : 'none';
+
+  const newIds = commentsAsc.map(x => String(x.id));
+  newIds.forEach(id => _msgState.feedThreadRenderedCommentIds.add(id));
+
+  if (!older) {
+    listEl.innerHTML = commentsAsc.map(renderFeedCommentLine).join('');
+    requestAnimationFrame(() => {
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+    });
+    return;
+  }
+
+  const prevScrollTop = scrollEl.scrollTop;
+  const prevScrollHeight = scrollEl.scrollHeight;
+  listEl.insertAdjacentHTML('afterbegin', commentsAsc.map(renderFeedCommentLine).join(''));
+  const newScrollHeight = scrollEl.scrollHeight;
+  scrollEl.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop;
+};
+
+appendFeedThreadComment = async function appendFeedThreadCommentVNext(c) {
+  const sid = String(_msgState.activeFeedThreadPostId || '');
+  if (!sid || String(c.reference_id) !== sid) return;
+  const id = String(c.id);
+  if (_msgState.feedThreadRenderedCommentIds.has(id)) return;
+
+  _msgState.feedThreadRenderedCommentIds.add(id);
+  const listEl = $('feed-thread-comments-list');
+  const scrollEl = $('feed-thread-scroll');
+  if (!listEl || !scrollEl) return;
+
+  const oldIsAtBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 60;
+  listEl.insertAdjacentHTML('beforeend', renderFeedCommentLine(c));
+  if (oldIsAtBottom) requestAnimationFrame(() => { scrollEl.scrollTop = scrollEl.scrollHeight; });
+
+  _msgState.feedCommentUnreadByPost[sid] = 0;
+  const ub = $(`feed-unread-${sid}`);
+  if (ub) ub.style.display = 'none';
+};
+
+openFeed = async function openFeedVNext() {
+  saveCurrentDraft();
+  _msgState.activeChanType = 'feed';
+  _msgState.activeConvId = null;
+  _msgState.activeMobileTab = 'feed';
+  _msgState.feedComposeCategory = readStoredFeedComposeCat();
+
+  document.querySelectorAll('.msg-chan-item,.msg-dm-item,.msg-shell-item').forEach(el => el.classList.remove('active'));
+  $('chan-feed')?.classList.add('active');
+  _msgSetActiveTabUI();
+  mobileShowMain();
+
+  const main = $('msg-main');
+  if (!main) return;
+
+  const split = $('feed-split');
+  if (split) split.classList.remove('thread-active');
+
+  const chipHtml = FEED_COMMUNITY_CATS.map(c => {
+    const active = _msgState.feedFilter === c.id;
+    const cnt = feedCountForFilter(c.id);
+    return `<button type="button" class="feed-cat-chip ${active ? 'active' : ''}" data-cat="${c.id}" aria-pressed="${active ? 'true' : 'false'}" onclick="setFeedFilter('${c.id}')">
+      <span class="feed-cat-chip-ico">${c.emoji}</span>
+      <span class="feed-cat-chip-lbl">${escHtml(c.label)}</span>
+      <span class="feed-cat-chip-badge" id="feed-cat-count-${c.id}" style="${cnt > 0 ? '' : 'display:none;'}">${cnt > 0 ? cnt : ''}</span>
+    </button>`;
+  }).join('');
+
+  main.innerHTML = `
+    <div class="msg-chan-header msg-shell-chat-header">
+      <button class="msg-back-btn" onclick="mobileShowSidebar()">←</button>
+      <div class="msg-shell-chat-avatar">🏘️</div>
+      <div class="msg-shell-chat-head-copy">
+        <div class="msg-chan-title msg-shell-chat-title">Fil du quartier</div>
+        <div class="msg-chan-desc msg-shell-chat-desc">Un espace plus editorial pour les residents, l'entraide et les infos utiles.</div>
+      </div>
+    </div>
+
+    <div class="feed-hub">
+      <div class="feed-hub-inner">
+        <div class="feed-hub-kicker">Residence</div>
+        <h2 class="feed-hub-title">Les nouvelles, l'entraide et les petites annonces de la copro</h2>
+        <p class="feed-hub-desc">Un fil plus lisible pour suivre ce qui compte, sans perdre les discussions importantes dans le bruit.</p>
+      </div>
+    </div>
+
+    <div class="feed-categories-bar">
+      <div class="feed-cat-chips-scroll" id="feed-cat-chips">${chipHtml}</div>
+    </div>
+
+    <button class="feed-fab-mobile msg-shell-fab" onclick="openFeedComposeModal()" style="position:fixed; bottom:24px; right:24px; width:60px; height:60px; border-radius:22px; background:var(--accent); color:white; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:100;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
+    <div class="feed-split" id="feed-split">
+      <div class="feed-left-pane" id="feed-left-pane">
+        <div class="feed-compose-desktop card" style="padding:18px; margin:16px; display:none; align-items:center; gap:14px; cursor:text;" onclick="openFeedComposeModal()">
+          <div class="feed-post-av" style="background:var(--accent);">${(profile?.prenom || 'U').charAt(0).toUpperCase()}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:var(--text);">Partager une nouvelle utile au quartier</div>
+            <div style="font-size:12px; color:var(--text-3); margin-top:3px;">Annonce, entraide, evenement ou note pratique</div>
+          </div>
+        </div>
+
+        <div class="feed-scroll feed-scroll--community" id="feed-left-scroll">
+          <div style="text-align:center;padding:40px;"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <div class="feed-thread-pane" id="feed-thread-pane">
+        <div class="feed-thread-empty">
+          <div class="msg-shell-welcome-ico">💬</div>
+          <div class="msg-shell-welcome-title">Ouvrez une discussion</div>
+          <div class="msg-shell-welcome-copy">Touchez repondre sous un message pour afficher le fil complet ici sans quitter la communaute.</div>
+        </div>
+      </div>
+    </div>`;
+
+  const style = document.createElement('style');
+  style.innerHTML = `@media(min-width:769px){ .feed-compose-desktop{display:flex !important;} .feed-fab-mobile{display:none !important;} }`;
+  $('msg-main').appendChild(style);
+
+  await loadFeed();
+};
