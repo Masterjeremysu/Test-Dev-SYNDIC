@@ -682,7 +682,7 @@ async function ppTogglePerm(role, permId, targetState) {
   _ppRenderMatrix();
 
   try {
-    const ok = await Permissions.setPermission(role, permId, targetState);
+    const ok = await Permissions.setPermission(role, permId, targetState, perm);
     if (!ok) throw new Error('save_failed');
     _pp.rolePerms[role][permId] = targetState;
     _ppRenderSummary();
@@ -718,7 +718,7 @@ async function ppToggleModuleAll(role, moduleId, targetState) {
 
   try {
     const results = await Promise.all(actionable.map(item =>
-      Permissions.setPermission(role, item.id, targetState)
+      Permissions.setPermission(role, item.id, targetState, item)
     ));
     if (results.some(ok => !ok)) throw new Error('save_failed');
     toast(`Module ${PERM_MODULE_LABELS[moduleId] || moduleId} mis a jour`, 'ok');

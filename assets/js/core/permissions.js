@@ -91,6 +91,45 @@ window.Permissions = (function () {
     return _catalog;
   }
 
+  async function ensurePermissionDefinition(def) {
+    if (!def?.id) return false;
+
+    const existing = _catalog.find(p => p.id === def.id);
+    if (existing) return true;
+
+    const parts = String(def.id).split('.');
+    const fallbackModule = def.module || parts[0] || 'misc';
+    const fallbackAction = def.action || parts[1] || 'view';
+
+    const payload = {
+      id: def.id,
+      module: fallbackModule,
+      action: fallbackAction,
+      label: def.label || def.id,
+      description: def.description || ''
+    };
+
+    const { error, data } = await sb
+      .from('permissions')
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      if (typeof window.toast === 'function') window.toast('Erreur definition permission : ' + error.message, 'err');
+      return false;
+    }
+
+    if (data) {
+      _catalog = _catalog.filter(p => p.id !== data.id);
+      _catalog.push(data);
+    } else if (!_catalog.some(p => p.id === payload.id)) {
+      _catalog.push(payload);
+    }
+
+    return true;
+  }
+
   // ────────────────────────────────────────────────────────────
   //  VÉRIFICATION
   // ────────────────────────────────────────────────────────────
@@ -187,8 +226,12 @@ window.Permissions = (function () {
   //  API ADMIN (Utilisée par admin.js)
   // ────────────────────────────────────────────────────────────
 
-  async function setPermission(role, permId, granted) {
+  async function setPermission(role, permId, granted, permDef) {
     if (profile?.role !== 'administrateur') return false;
+
+    const ensured = await ensurePermissionDefinition(permDef || { id: permId });
+    if (!ensured) return false;
+
     const { error } = await sb.from('role_permissions').upsert(
       { role, permission: permId, granted, updated_by: user.id, updated_at: new Date().toISOString() },
       { onConflict: 'role,permission' }
@@ -248,7 +291,7 @@ window.Permissions = (function () {
     has,
     getAccessiblePages, getDefaultPage,
     startRealtime, stopRealtime,
-    setPermission, setRoleLock,
+    setPermission, setRoleLock, ensurePermissionDefinition,
     getPermissionsForRole, getRoleLocks, getChangeLog,
     getCatalog: () => _catalog,
     isLoaded:   () => _loaded,
