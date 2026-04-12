@@ -1,8 +1,8 @@
 // CoproSync SW v5 — Cache Stratégique + Offline First
 // Remplace sw.js à la racine du projet
 
-const CACHE_STATIC  = 'coprosync-static-v5';
-const CACHE_RUNTIME = 'coprosync-runtime-v5';
+const CACHE_STATIC  = 'coprosync-static-v6';
+const CACHE_RUNTIME = 'coprosync-runtime-v6';
 const MAX_RUNTIME   = 60;
 
 const STATIC_ASSETS = [
