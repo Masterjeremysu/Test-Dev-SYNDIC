@@ -34,7 +34,7 @@ function renderCles() {
         <h1 style="font-size:24px;font-weight:800;color:var(--text-1);margin:0;">Gestion des clés</h1>
         <p style="color:var(--text-2);margin:4px 0 0;font-size:14px;">${sorties} clé(s) sortie(s) sur ${total}</p>
       </div>
-      ${isManager() ? `<button class="btn btn-primary" onclick="openNewCleModal()">+ Ajouter une clé</button>` : ''}
+      ${(typeof canManageCles === 'function' && canManageCles()) ? `<button class="btn btn-primary" onclick="openNewCleModal()">+ Ajouter une clé</button>` : ''}
     </div>
 
     <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:24px; align-items:center; background:var(--bg-1); padding:12px; border-radius:var(--r-md); border:1px solid var(--border);">
@@ -80,7 +80,7 @@ function _renderCleCard(c) {
       ${c.date_sortie ? `<div style="font-size:11px; color:var(--text-3); margin-top:4px; display:flex; align-items:center; gap:4px;">⏱️ Depuis le ${typeof fmtD === 'function' ? fmtD(c.date_sortie) : new Date(c.date_sortie).toLocaleDateString()}</div>` : ''}
       ${c.notes ? `<div style="font-size:11px; color:var(--text-3); margin-top:6px; padding:8px; background:var(--bg-2); border-radius:6px; font-style:italic;">"${safeNotes}"</div>` : ''}
       
-      ${isManager() ? `
+      ${(typeof canManageCles === 'function' && canManageCles()) ? `
       <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
         <button class="btn btn-xs" style="flex:1; justify-content:center; ${isSortie ? 'background:var(--green-light);color:var(--green);border-color:var(--green-border);' : 'background:var(--orange-light);color:var(--orange);border-color:var(--orange-border);'}" onclick="moveCle('${c.id}','${c.statut}')">
           ${isSortie ? '✓ Retour' : '→ Sortir'}

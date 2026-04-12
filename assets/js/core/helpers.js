@@ -30,8 +30,14 @@ function isSyndicOrAdmin() { return isSyndic() || isAdmin(); }
 // ── Vérifications de permissions métier ──────────────────────────
 
 function canManageTickets()  { return Permissions.has('tickets.edit_status'); }
-function canManageContent()  { return isManager(); }
-function canManageAnnonces() { return isManager(); }
+function canManageAgenda()   { return isAdmin() || Permissions.has('agenda.create') || Permissions.has('agenda.edit'); }
+function canManageContacts() { return isAdmin() || Permissions.has('contacts.manage'); }
+function canManageAnnonces() { return isAdmin() || Permissions.has('annonces.create') || Permissions.has('annonces.edit') || Permissions.has('annonces.delete'); }
+function canManageDocuments(){ return isAdmin() || Permissions.has('documents.create') || Permissions.has('documents.edit') || Permissions.has('documents.delete'); }
+function canManageVotes()    { return isAdmin() || Permissions.has('votes.create') || Permissions.has('votes.edit') || Permissions.has('votes.delete'); }
+function canManageCles()     { return isAdmin() || Permissions.has('cles.manage'); }
+function canManageRegistre() { return isAdmin() || Permissions.has('registre.manage') || Permissions.has('registre.create') || Permissions.has('registre.edit') || Permissions.has('registre.delete'); }
+function canManageContent()  { return canManageAnnonces() || canManageAgenda() || canManageDocuments() || canManageVotes(); }
 function canViewRapport()    { return Permissions.has('rapport.view'); }
 
 function canViewTicket(ticket) {

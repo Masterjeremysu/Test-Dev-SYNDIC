@@ -1,5 +1,5 @@
 // ============================================================================
-//  PAGE ADMIN : AUDIT DES PERMISSIONS
+//  PAGE ADMIN : GESTION DES PERMISSIONS
 //  assets/js/features/permissions/permissions-page.js
 // ============================================================================
 
@@ -169,7 +169,7 @@ function _ppNormalizeCatalog(dbCatalog) {
   const map = new Map();
 
   (AUDIT_PERMISSION_CATALOG || []).forEach(item => {
-    map.set(item.id, { ...item, auditOnly: true });
+    map.set(item.id, { ...item, auditOnly: false });
   });
 
   (dbCatalog || []).forEach(item => {
@@ -208,7 +208,7 @@ function _ppRoleCoverage(role) {
 }
 
 function _ppCanToggle(role, perm) {
-  return PERM_EDITABLE_ROLES.has(role) && !perm.auditOnly && !_pp.locks[role]?.locked;
+  return PERM_EDITABLE_ROLES.has(role) && !_pp.locks[role]?.locked;
 }
 
 function _ppRolePermEnabled(role, permId) {
@@ -226,7 +226,7 @@ function _ppRoleStatus(role) {
 }
 
 function _ppModuleRealPerms(perms) {
-  return (perms || []).filter(item => !item.auditOnly);
+  return perms || [];
 }
 
 function _ppModuleViewPerm(perms) {
@@ -347,7 +347,7 @@ async function renderPermissionsPage() {
     <div class="pp-header">
       <div>
         <h1 class="pp-title">Gouvernance & permissions</h1>
-        <p class="pp-subtitle">Audit complet des droits par role pour toute la copropriete. Cette vue couvre les modules residents, gestion, securite et les zones sensibles comme le registre, les utilisateurs et le journal.</p>
+        <p class="pp-subtitle">Gestion complete des droits par role pour toute la copropriete. Cette vue te permet de couper ou autoriser la visibilite des pages et les actions de chaque role, module par module.</p>
       </div>
       <div class="pp-simulate">
         <div>
@@ -373,7 +373,7 @@ async function renderPermissionsPage() {
 
     <div class="pp-audit-note">
       <span style="font-size:18px; flex-shrink:0;">🧭</span>
-      <div><strong>Lecture de l audit :</strong> les lignes normales sont configurables, les lignes marquees <strong>Audit</strong> servent a cadrer la politique cible meme si la permission n est pas encore branchee en base. Les modules sensibles doivent rester limites a la gestion, en particulier <strong>Registre</strong>, <strong>Utilisateurs</strong>, <strong>Journal</strong> et <strong>Permissions</strong>.</div>
+      <div><strong>Usage admin :</strong> tout ce qui apparait dans cette page est maintenant pilotable. Les modules sensibles doivent rester limites a la gestion, en particulier <strong>Registre</strong>, <strong>Utilisateurs</strong>, <strong>Journal</strong> et <strong>Permissions</strong>.</div>
     </div>
 
     <div class="pp-tabs">
@@ -383,7 +383,7 @@ async function renderPermissionsPage() {
     </div>
 
     <div id="pp-content-matrix">
-      <div class="pp-section-title">Role a auditer</div>
+      <div class="pp-section-title">Role a configurer</div>
       <div class="pp-role-row" id="pp-role-row">
         ${PERM_ROLES_LIST.map(r => {
           const meta = PERM_ROLE_META[r];
@@ -563,7 +563,6 @@ function _ppRenderMatrix() {
       }
       .pp-toggle.on::after { transform:translateX(20px); }
       .pp-toggle.saving, .pp-toggle:disabled { opacity:.45; pointer-events:none; }
-      .pp-toggle.audit-only { background:var(--surface-2); border-color:var(--border); }
       .pp-readonly-note {
         background:var(--surface-2); border:1px solid var(--border); border-radius:16px; padding:14px 16px; margin-bottom:16px;
         font-size:13px; color:var(--text-2); line-height:1.6;
@@ -578,7 +577,7 @@ function _ppRenderMatrix() {
   let html = extraCss;
 
   if (isReadOnlyRole) {
-    html += `<div class="pp-readonly-note"><strong>${PERM_ROLE_LABELS[role]} :</strong> ce profil est presente ici pour l audit global. Son acces doit rester complet et n est pas configurable depuis cette matrice.</div>`;
+    html += `<div class="pp-readonly-note"><strong>${PERM_ROLE_LABELS[role]} :</strong> ce profil est visible ici comme reference. Son acces reste complet et n est pas configurable depuis cette matrice.</div>`;
   }
   html += `<div class="pp-readonly-note"><strong>Mode admin :</strong> tu configures ici <strong>${PERM_ROLE_LABELS[role]}</strong>. Le role connecte reste administrateur, mais les interrupteurs modifient les droits du role selectionne. Utilise les actions rapides <strong>Page</strong> et <strong>Tout</strong> pour couper un module en un clic.</div>`;
 
@@ -641,7 +640,6 @@ function _ppRenderMatrix() {
                   <div class="pp-perm-label">${escHtml(item.label)}</div>
                   <div class="pp-perm-desc">${escHtml(item.description || '')}</div>
                   <div class="pp-perm-flags">
-                    ${item.auditOnly ? '<span class="pp-flag" style="background:var(--surface-2); color:var(--text-3); border-color:var(--border);">Audit</span>' : ''}
                     ${sensitive ? '<span class="pp-flag" style="background:var(--amber-light); color:var(--amber); border-color:var(--amber-border);">Sensible</span>' : ''}
                     ${modId === 'registre' && role === 'copropriétaire' ? '<span class="pp-flag" style="background:var(--red-light); color:var(--red); border-color:var(--red-border);">A limiter</span>' : ''}
                   </div>
@@ -652,7 +650,7 @@ function _ppRenderMatrix() {
                   </span>
                 </div>
                 <div style="text-align:center;">
-                  <button class="pp-toggle ${enabled ? 'on' : ''} ${item.auditOnly ? 'audit-only' : ''} ${isSaving ? 'saving' : ''}"
+                  <button class="pp-toggle ${enabled ? 'on' : ''} ${isSaving ? 'saving' : ''}"
                     ${canToggle ? `onclick="ppTogglePerm('${role}', '${item.id}', ${!enabled})"` : 'disabled'}>
                   </button>
                 </div>
@@ -757,7 +755,7 @@ function _ppRenderEmergency() {
       <div class="pp-section-title">Arret d urgence par role</div>
       <p style="font-size:13px; color:var(--text-2); margin-bottom:20px; line-height:1.6;">
         Suspendez integralement l acces d un role en cas d abus, de maintenance critique ou de fuite d information.
-        Le profil administrateur reste visible ici pour l audit mais ne doit pas etre verrouille a la legere.
+        Le profil administrateur n apparait pas ici car il ne doit pas etre verrouille a la legere.
       </p>
       <div class="pp-emergency-list">
         ${PERM_ROLES_LIST.filter(role => role !== 'administrateur').map(role => {

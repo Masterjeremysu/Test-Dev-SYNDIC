@@ -22,7 +22,7 @@ async function renderVotes() {
         <h1 style="font-size:24px; font-weight:800; color:var(--text-1); margin:0;">Votes & Sondages</h1>
         <p style="color:var(--text-2); margin:4px 0 0; font-size:14px;">Décisions participatives de la résidence</p>
       </div>
-      ${typeof isManager === 'function' && isManager() ? `
+      ${typeof canManageVotes === 'function' && canManageVotes() ? `
         <button class="btn btn-primary" onclick="openVoteModal()" style="box-shadow:0 4px 12px rgba(59,130,246,0.3);">
           + Créer un vote
         </button>
@@ -85,7 +85,7 @@ function renderVotesList() {
 
   const ouverts = _votesCache.filter(v => v.statut === 'ouvert');
   const clos = _votesCache.filter(v => v.statut === 'clos');
-  const isManagerUser = typeof isManager === 'function' && isManager();
+  const isManagerUser = typeof canManageVotes === 'function' && canManageVotes();
   const brouillons = isManagerUser ? _votesCache.filter(v => v.statut === 'brouillon') : [];
   
   let html = '';
@@ -120,7 +120,7 @@ function renderVoteCard(v) {
   const type = VOTE_TYPES[v.type] || VOTE_TYPES.sondage;
   const maReponse = _reponsesCache[v.id];
   const dejaVote = !!maReponse;
-  const isManagerUser = typeof isManager === 'function' && isManager();
+  const isManagerUser = typeof canManageVotes === 'function' && canManageVotes();
   
   const cloture = v.date_cloture ? new Date(v.date_cloture) : null;
   const joursRestants = cloture ? Math.ceil((cloture - new Date()) / 86400000) : null;

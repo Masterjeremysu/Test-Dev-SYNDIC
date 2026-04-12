@@ -15,7 +15,7 @@ async function renderContacts() {
         <h1 style="font-size:24px;font-weight:800;color:var(--text-1);margin:0;">Contacts & Urgences</h1>
         <p style="color:var(--text-2);margin:4px 0 0;font-size:14px;">Numéros importants de la résidence</p>
       </div>
-      ${isManager() ? `<button class="btn btn-primary" onclick="openContactModal()">+ Ajouter</button>` : ''}
+      ${(typeof canManageContacts === 'function' && canManageContacts()) ? `<button class="btn btn-primary" onclick="openContactModal()">+ Ajouter</button>` : ''}
     </div>
 
     <div style="margin-bottom: 24px; position: relative;">
@@ -112,7 +112,7 @@ function renderContactsList() {
             </div>` : ''}
         </div>
         
-        ${isManager() ? `
+        ${(typeof canManageContacts === 'function' && canManageContacts()) ? `
         <div style="flex-shrink:0;">
           <button class="btn btn-ghost btn-sm" onclick="openContactModal('${c.id}')" title="Modifier" style="padding:8px;">✏️</button>
         </div>` : ''}

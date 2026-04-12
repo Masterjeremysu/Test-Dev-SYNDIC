@@ -259,7 +259,7 @@ async function renderRegistre() {
     page.innerHTML = `<div class="reg-wrap"><div class="reg-empty">${_ico('warn',40)}<p>Aucune copropriété sélectionnée</p><span>Définissez window._currentCoproId dans votre app.</span></div></div>`;
     return;
   }
-  const mgr = typeof isManager==='function' ? isManager() : true;
+  const mgr = typeof canManageRegistre === 'function' ? canManageRegistre() : (typeof isManager==='function' ? isManager() : true);
 
   page.innerHTML = `
   <div class="reg-wrap" style="animation:pageIn .3s ease">

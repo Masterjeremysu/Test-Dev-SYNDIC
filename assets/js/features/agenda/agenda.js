@@ -48,7 +48,7 @@ async function renderAgenda() {
           <button class="btn btn-ghost btn-sm" id="view-cal-btn" onclick="setAgendaView('cal')" style="border-radius:0;border:none;background:var(--accent);color:#fff;">📅 Calendrier</button>
           <button class="btn btn-ghost btn-sm" id="view-list-btn" onclick="setAgendaView('list')" style="border-radius:0;border:none;">☰ Liste</button>
         </div>
-        ${(typeof isManager === 'function' && isManager()) ? `<button class="btn btn-primary" onclick="openNewEvent()">+ Ajouter</button>` : ''}
+        ${(typeof canManageAgenda === 'function' && canManageAgenda()) ? `<button class="btn btn-primary" onclick="openNewEvent()">+ Ajouter</button>` : ''}
       </div>
     </div>
 

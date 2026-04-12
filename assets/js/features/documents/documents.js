@@ -16,7 +16,7 @@ async function renderDocuments() {
   $('page').innerHTML = `<div style="padding:24px;">
     <div class="ph" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <div><h1>Documents</h1><p>Base documentaire de la résidence</p></div>
-      ${isManager() ? `<button class="btn btn-primary" onclick="openDocModal()">+ Ajouter un document</button>` : ''}
+      ${(typeof canManageDocuments === 'function' && canManageDocuments()) ? `<button class="btn btn-primary" onclick="openDocModal()">+ Ajouter un document</button>` : ''}
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;">
       <div style="flex:1;position:relative;">
@@ -38,7 +38,7 @@ async function renderDocuments() {
 async function loadDocs() {
   // Managers voient tout, copropriétaires uniquement les docs publics
   let query = sb.from('documents').select('*').order('epingle', { ascending:false }).order('created_at', { ascending:false });
-  if (!isManager()) query = query.eq('visible_pour', 'tous');
+  if (!(typeof canManageDocuments === 'function' && canManageDocuments())) query = query.eq('visible_pour', 'tous');
   const { data } = await query;
   _docsCache = data || [];
   const { data: vus } = await sb.from('documents_vus').select('document_id').eq('user_id', user.id);
@@ -122,7 +122,7 @@ function renderDocCard(d) {
         📥 Télécharger
       </a>
       ${d.fichier_type?.includes('pdf') ? `<a href="${d.fichier_url}" target="_blank" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();markDocVu('${d.id}')">👁️ Voir</a>` : ''}
-      ${isManager() ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDocModal('${d.id}')">✏️</button>
+      ${(typeof canManageDocuments === 'function' && canManageDocuments()) ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDocModal('${d.id}')">✏️</button>
       <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="event.stopPropagation();deleteDoc('${d.id}')">🗑</button>` : ''}
     </div>
   </div>`;
