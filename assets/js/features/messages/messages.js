@@ -1777,15 +1777,15 @@ renderMessages = function renderMessagesVNext() {
 
   page.innerHTML = `
     <div class="msg-inner-tabs msg-shell-tabs" id="msg-inner-tabs">
-      <button class="msg-inner-tab ${_msgState.activeMobileTab === 'feed' ? 'active' : ''}" onclick="switchMobileTab('feed')">
-        <span class="msg-inner-tab-ico">🏘️</span><span>Communaute</span>
+      <button type="button" class="msg-inner-tab ${_msgState.activeMobileTab === 'feed' ? 'active' : ''}" onclick="switchMobileTab('feed')">
+        <span class="msg-inner-tab-ico">🏘️</span><span>Communauté</span>
       </button>
-      <button class="msg-inner-tab ${_msgState.activeMobileTab === 'channels' ? 'active' : ''}" onclick="switchMobileTab('channels')" id="msg-tab-channels">
+      <button type="button" class="msg-inner-tab ${_msgState.activeMobileTab === 'channels' ? 'active' : ''}" onclick="switchMobileTab('channels')" id="msg-tab-channels">
         <span class="msg-inner-tab-ico">💬</span><span>Canaux</span>
         <span class="msg-inner-tab-badge" id="tab-badge-channels" style="display:none;"></span>
       </button>
-      <button class="msg-inner-tab ${_msgState.activeMobileTab === 'dms' ? 'active' : ''}" onclick="switchMobileTab('dms')" id="msg-tab-dms">
-        <span class="msg-inner-tab-ico">🔒</span><span>Prive</span>
+      <button type="button" class="msg-inner-tab ${_msgState.activeMobileTab === 'dms' ? 'active' : ''}" onclick="switchMobileTab('dms')" id="msg-tab-dms">
+        <span class="msg-inner-tab-ico">🔒</span><span>Privé</span>
         <span class="msg-inner-tab-badge" id="tab-badge-dms" style="display:none;"></span>
       </button>
     </div>
