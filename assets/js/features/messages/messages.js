@@ -556,7 +556,7 @@ async function openConv(convId) {
         <textarea class="chat-input" id="chat-input" placeholder="Message…" rows="1"
           style="flex:1; border:none; background:transparent; padding:10px 0; font-size:15px; resize:none; max-height:120px; outline:none;"
           oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';onChatInput(event);saveCurrentDraft();"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey&&window.innerWidth>768){event.preventDefault();sendMessage();}"></textarea>
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
         
         <div id="chat-mention-list" class="chat-mention-pop" style="display:none; position:absolute; bottom:100%; left:16px; right:16px; background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:0 -4px 16px rgba(0,0,0,0.1); margin-bottom:8px; z-index:10;"></div>
         
@@ -1833,7 +1833,7 @@ renderMessages = function renderMessagesVNext() {
           <div id="chan-list-dms" class="msg-shell-list msg-shell-list-last"></div>
         </div>
 
-        <button class="msg-fab-mobile msg-shell-fab" onclick="openNewDM()">
+        <button type="button" class="msg-fab-mobile msg-shell-fab" onclick="openNewDM()" title="Nouvelle conversation" aria-label="Nouvelle conversation privée">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
         </button>
       </div>
@@ -1981,10 +1981,11 @@ openConv = async function openConvVNext(convId) {
     <div class="msg-chan-header msg-shell-chat-header">
       <button class="msg-back-btn" onclick="mobileBackToChannelList()">←</button>
       <div class="msg-shell-chat-avatar">${emoji}</div>
-      <div class="msg-shell-chat-head-copy">
+      <div class="msg-shell-chat-head-copy msg-header-titles">
         <div class="msg-chan-title msg-shell-chat-title">${escHtml(title)}</div>
         <div class="msg-chan-desc msg-shell-chat-desc">${isPrivate ? 'Conversation privee' : 'Canal de residence'}</div>
       </div>
+      <button type="button" class="btn btn-ghost msg-header-new-dm" onclick="openNewDM()" title="Nouvelle conversation" aria-label="Nouvelle conversation privée">＋</button>
     </div>
 
     <div class="chat-messages msg-shell-chat-stream" id="chat-messages">
@@ -2001,7 +2002,7 @@ openConv = async function openConvVNext(convId) {
         <button class="btn btn-ghost btn-sm msg-shell-emoji-btn" onclick="pickFeedEmoji(event)">☺</button>
         <textarea class="chat-input msg-shell-chat-input" id="chat-input" placeholder="Ecrire un message..." rows="1"
           oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';onChatInput(event);saveCurrentDraft();"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey&&window.innerWidth>768){event.preventDefault();sendMessage();}"></textarea>
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
         <div id="chat-mention-list" class="chat-mention-pop" style="display:none;"></div>
       </div>
       <button class="chat-send msg-shell-chat-send" onclick="sendMessage()">

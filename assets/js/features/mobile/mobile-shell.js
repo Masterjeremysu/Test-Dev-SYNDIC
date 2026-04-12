@@ -232,6 +232,19 @@
     overflow-y: auto !important;
   }
 
+  /* Discussion ouverte : la zone messages doit laisser la place au compositeur en bas */
+  body[data-page="messages"] .msg-main.visible .chat-messages,
+  body[data-page="messages"] #msg-main.visible #chat-messages {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  body[data-page="messages"] .msg-main.visible .chat-input-bar,
+  body[data-page="messages"] .msg-main.visible .msg-shell-chat-composer {
+    flex-shrink: 0 !important;
+  }
+
   body[data-page="map"] #page > div:first-child {
     height: 100%;
   }
