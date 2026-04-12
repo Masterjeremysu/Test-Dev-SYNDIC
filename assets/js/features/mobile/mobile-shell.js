@@ -194,8 +194,8 @@
     min-height: 0 !important;
     min-width: 0 !important;
     width: 100% !important;
-    height: auto !important;
-    max-height: none !important;
+    height: 100% !important;
+    max-height: 100% !important;
     transform: none !important;
     transition: opacity 0.2s ease !important;
   }
@@ -243,6 +243,38 @@
   body[data-page="messages"] .msg-main.visible .chat-input-bar,
   body[data-page="messages"] .msg-main.visible .msg-shell-chat-composer {
     flex-shrink: 0 !important;
+  }
+
+  /*
+   * Compositeur « collé » au-dessus de la bottom-nav : sinon overflow:hidden + hauteur
+   * mal résolue sur flex auto masque la zone de saisie (canaux / privé).
+   */
+  body[data-page="messages"] .msg-main.visible .msg-shell-chat-composer.chat-input-bar,
+  body[data-page="messages"] #msg-main.visible .msg-shell-chat-composer.chat-input-bar {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: var(--mobile-nav-height) !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    z-index: 1150 !important;
+    margin: 0 !important;
+  }
+
+  body[data-page="messages"] .msg-main.visible #msg-reply-bar,
+  body[data-page="messages"] #msg-main.visible #msg-reply-bar {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: calc(var(--mobile-nav-height) + 58px) !important;
+    z-index: 1149 !important;
+    box-sizing: border-box !important;
+  }
+
+  body[data-page="messages"] .msg-main.visible #chat-messages,
+  body[data-page="messages"] #msg-main.visible #chat-messages {
+    padding-bottom: calc(var(--mobile-nav-height) + 80px) !important;
   }
 
   body[data-page="map"] #page > div:first-child {
