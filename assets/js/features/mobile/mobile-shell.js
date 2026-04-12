@@ -206,6 +206,30 @@
 
   body[data-page="messages"] .msg-main.visible {
     display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body[data-page="messages"] .feed-split {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+  }
+
+  body[data-page="messages"] .feed-left-pane {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  body[data-page="messages"] .feed-scroll--community,
+  body[data-page="messages"] #feed-left-scroll {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
   }
 
   body[data-page="map"] #page > div:first-child {

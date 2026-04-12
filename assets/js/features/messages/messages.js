@@ -2480,5 +2480,19 @@ openFeed = async function openFeedVNext() {
   style.innerHTML = `@media(min-width:769px){ .feed-compose-desktop{display:flex !important;} .feed-fab-mobile{display:none !important;} }`;
   $('msg-main').appendChild(style);
 
-  await loadFeed();
+  try {
+    await loadFeed();
+  } catch (err) {
+    console.warn('[feed] loadFeed', err);
+    const scrollEl = $('feed-left-scroll');
+    if (scrollEl) {
+      scrollEl.innerHTML = `
+        <div class="feed-empty-cat">
+          <div class="feed-empty-cat-ico">⚠️</div>
+          <div class="feed-empty-cat-title">Impossible de charger le fil</div>
+          <div class="feed-empty-cat-desc">Vérifiez la connexion puis réessayez. Si le problème continue, contactez le support.</div>
+          <button type="button" class="btn btn-primary btn-sm" style="margin-top:16px;" onclick="openFeed()">Réessayer</button>
+        </div>`;
+    }
+  }
 };
