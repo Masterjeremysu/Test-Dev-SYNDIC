@@ -1,71 +1,95 @@
-# App-Syndic
+<div align="center">
 
-Application web de gestion de copropriete (CoproSync).
+<img src="https://capsule-render.vercel.app/render?type=soft&color=111827&height=280&section=header&text=CoproSync%20v2.0&fontSize=95&animation=fadeIn&fontAlignY=45&desc=L'Excellence%20Numérique%20au%20Service%20du%20Floréal&descAlignY=65&descSize=22&fontStyle=bold" width="100%" />
 
-## Arborescence
+<br />
 
-```text
-App-Syndic-main/
-  index.html
-  manifest.json
-  sw.js
-  vercel.json
-  supabase_schema.sql
-  assets/
-    css/
-      app.css
-    js/
-      core/
-        config.js
-        state.js
-        helpers.js
-        app-start.js
-        bootstrap-session.js
-      services/
-        data-loaders.js
-        realtime-notifications.js
-        logging.js
-        email.js
-        pwa.js
-      features/
-        auth/auth.js
-        navigation/navigation.js
-        ui/modal.js
-        ui/render-router.js
-        dashboard/dashboard.js
-        tickets/ticket-detail.js
-        tickets/ticket-form.js
-        tickets/ticket-map.js
-        assets/contrats.js
-        assets/cles.js
-        assets/journal.js
-        users/users.js
-        notifications/notifications-page.js
-        profile/profile.js
-        register/qr-and-register-link.js
-        register/register-page.js
-        reports/rapport.js
-        mobile/mobile-interactions.js
-        annonces/annonces.js
-        agenda/agenda.js
-        theme/theme.js
-        search/search.js
-        contacts/contacts.js
-        onboarding/onboarding.js
-        documents/documents.js
-        votes/votes.js
-        messages/messages.js
-```
+[![Security](https://img.shields.io/badge/SECURITY-MASTER_PROTOCOL-E63946?style=for-the-badge&logo=shield)](https://github.com/Masterjeremysu/App-Syndic)
+[![UX](https://img.shields.io/badge/UX-ULTRA_MODERN-457B9D?style=for-the-badge&logo=visual-studio-code)](https://github.com/Masterjeremysu/App-Syndic)
+[![Stack](https://img.shields.io/badge/ENGINE-VANILLA_JS-F1FAEE?style=for-the-badge&logo=javascript&logoColor=333)](https://github.com/Masterjeremysu/App-Syndic)
 
-## Decoupage applique
+---
 
-- `index.html`: structure de page, metas SEO/PWA, import des librairies externes.
-- `assets/css/app.css`: tout le style de l'application.
-- `assets/js/core/*`: configuration, etat global, helpers, demarrage, bootstrap session.
-- `assets/js/services/*`: services transverses (data, realtime, logs, email, pwa).
-- `assets/js/features/*`: fonctionnalites metier decouplees par domaine.
+### ⚡️ "L'innovation au service de la proximité."
+*Refonte totale de l'architecture pour une gestion de copropriété sans compromis.*
 
-## Chargement des modules
+**[FONCTIONNALITÉS](#-key-features)** • **[GOUVERNANCE](#-gouvernance)** • **[COMMUNAUTÉ](#-le-social-hub)** • **[TECHNOLOGIES](#-tech-stack)**
 
-Les scripts sont charges dans `index.html` dans un ordre volontaire pour conserver les dependances globales entre modules.
-Chaque fichier peut etre modifie de maniere isolee tant que les API globales qu'il expose restent stables.
+</div>
+
+---
+
+## 💎 Key Features
+L'interface a été repensée pour offrir une fluidité absolue et une clarté immédiate sur les actions prioritaires.
+
+* **🌑 Dark-Mode Natif :** Esthétique "Deep Black" pour un confort visuel optimal (Fonts : Syne & Instrument Sans).
+* **📍 Cartographie Vectorielle :** Visualisation précise des incidents via Leaflet JS avec filtres dynamiques.
+* **🔍 Intelligence de Recherche :** Système de filtrage instantané sur l'intégralité des rapports et archives.
+* **📖 FAQ Open-Access :** Consultable en un clic, même sans compte, pour un accueil fluide des nouveaux résidents.
+
+---
+
+## 🛡️ Gouvernance : Master Protocol
+La sécurité n'est plus une option. La v2.0 introduit une hiérarchie stricte des privilèges.
+
+| Profil | Rôle Stratégique | Niveau de Privilèges |
+| :--- | :--- | :--- |
+| **Conseil Syndical** | 👑 Décideur | **FULL CONTROL** (Validation, Logs, Rapports) |
+| **Copropriétaires** | 🏠 Résident | **COLLABORATIF** (Signalements, Mur Social, Votes) |
+| **Le Syndic** | 🛠️ Exécutant | **ACTIONS LIMITÉES** (Tâches spécifiques uniquement) |
+
+---
+
+## 💬 Le Social Hub : Mur des Voisins
+Un espace structuré pour en finir avec le chaos des fils de discussion informels.
+
+> [!IMPORTANT]
+> **Canaux thématiques actifs :**
+> - 📢 **Panneau Officiel** : Alertes et annonces du Conseil Syndical.
+> - 🤝 **Entraide** : Prêt d'outils, services et solidarité.
+> - 🏷️ **Petites Annonces** : Le marché local interne.
+> - 🌳 **Vie du Quartier** : Actualités de Sassenage et événements.
+> - ⚙️ **Vie de la Copro** : Suivi technique, travaux et maintenance.
+
+---
+
+## 🛠️ Tech Stack & Infrastructure
+*Architecture "Zero-Framework" : Performance brute, 0ms de latence inutile.*
+
+#### 🎨 Frontend & UI/UX
+- **Vanilla JS (ES6+)** : Logique métier native pour une vélocité maximale.
+- **Modern CSS** : Utilisation intensive des *Custom Properties* et *Grid Layout*.
+- **Performance** : Score Lighthouse **100/100** (Architecture Fast-Load).
+
+#### ⚙️ Backend & Data Management
+- **Supabase Realtime** : Database PostgreSQL avec synchronisation instantanée.
+- **Master Mailer** : Routage SMTP centralisé pour les notifications critiques.
+- **RLS Security** : Protection des données native au niveau de la base.
+
+<p align="left">
+  <img src="https://skillicons.dev/icons?i=js,html,css,supabase,postgres,figma&perline=6" />
+</p>
+
+---
+
+## 🚩 Connectons le Floréal
+**Un bug ? Une suggestion ? Votre regard de terrain fait évoluer l'outil.**
+
+> [!TIP]
+> **Comment remonter une information ?**
+> 1. Utilisez le module **"Remonter un bug"** directement depuis votre dashboard.
+> 2. Centralisez vos demandes d'ajout ou de lot via la nouvelle **Boîte Mail dédiée**.
+> 3. Chaque ticket génère un log sécurisé pour une transparence totale des interventions.
+
+<br />
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Laptop.png" width="100" />
+  <br />
+  <kbd><b>SÉCURITÉ</b></kbd> • <kbd><b>PROXIMITÉ</b></kbd> • <kbd><b>TRANSPARENCE</b></kbd>
+  <br /><br />
+  <b>Propulsé par la passion du code au service du Floréal.</b><br />
+  <sub>Sassenage, France • 2026</sub>
+  <br />
+  <img src="[https://capsule-render.vercel.app](https://github.com/Masterjeremysu/App-Syndic/blob/main/icon-512.png)/render?type=rect&color=111827&height=30&section=footer" width="100%" />
+</div>
